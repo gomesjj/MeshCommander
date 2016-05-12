@@ -1,0 +1,354 @@
+{
+  "blocks": {
+    "_start": {
+      "name": "Start",
+      "desc": "Starting Block",
+      "code": "print \"Script Started\""
+    },
+    "_end": {
+      "name": "End",
+      "desc": "Ending Block",
+      "code": ":end\r\njump :SkipPullSystemStatus PullSystemStatus \"!=\" 1\r\nPullSystemStatus\r\n:SkipPullSystemStatus\r\njump :SkipPullEventLog PullEventLog \"!=\" 1\r\nPullEventLog\r\n:SkipPullEventLog\r\njump :SkipPullAuditLog PullAuditLog \"!=\" 1\r\nPullAuditLog\r\n:SkipPullAuditLog\r\njump :SkipPullCertificates PullCertificates \"!=\" 1\r\nPullCertificates\r\n:SkipPullCertificates\r\njump :SkipPullWatchdog PullWatchdog \"!=\" 1\r\nPullWatchdog\r\n:SkipPullWatchdog\r\njump :SkipPullSystemDefense PullSystemDefense \"!=\" 1\r\nPullSystemDefense\r\n:SkipPullSystemDefense\r\njump :SkipPullHardware PullHardware \"!=\" 1\r\nPullHardware\r\n:SkipPullHardware\r\njump :SkipPullUserInfo PullUserInfo \"!=\" 1\r\nPullUserInfo\r\n:SkipPullUserInfo\r\njump :SkipPullRemoteAccess PullRemoteAccess \"!=\" 1\r\nPullRemoteAccess\r\n:SkipPullRemoteAccess\r\nprint \"Script Completed\""
+    },
+    "AMT-Accounts-AddDigestUser": {
+      "name": "Accounts - Add Digest User",
+      "desc": "Add a new digest user account to Intel AMT",
+      "code": "# Get the DigestRealm\r\njump :SkipDigestRealm-%%%~%%% DigestRealm \"!=\"\r\nprint \"Fetching digest realm...\"\r\nsplit ws_general_query \"*AMT_GeneralSettings\" ,\r\nwsbatchenum \"wsman_answer\" ws_general_query\r\njump :error-%%%~%%% wsman_result \"!=\" 200\r\nset DigestRealm wsman_answer.AMT_GeneralSettings.response.DigestRealm\r\n:SkipDigestRealm-%%%~%%%\r\n\r\n# Create account\r\nset AccountName \"%%%name%%%\"\r\nset AccountPass \"%%%password%%%\"\r\nset digest \"{AccountName}:{DigestRealm}:{AccountPass}\"\r\nmd5 digestmd5 digest\r\nbtoa digestmd5 digestmd5\r\njsonparse wsargs \"%7B %22DigestUsername%22:%22{AccountName}%22, %22DigestPassword%22:%22{digestmd5}%22, %22AccessPermission%22:%%%accessPermission%%%, %22Realms%22:[%%%realms%%%] %7D\"\r\nwsexec \"AMT_AuthorizationService\" \"AddUserAclEntryEx\" wsargs \"\"\r\njump :error-%%%~%%% wsman_result \"!=\" 200\r\nprint \"Account {AccountName} create: {AMT_AuthorizationService.Body.ReturnValueStr}\"\r\n\r\nset PullUserInfo 1\r\njump :end-%%%~%%%\r\n:error-%%%~%%%\r\nprint \"Call failed with error {wsman_result}\"\r\n:end-%%%~%%%",
+      "vars": {
+        "name": {
+          "name": "Name",
+          "desc": "Name of the user account to create",
+          "type": 1,
+          "maxlength": 30,
+          "value": ""
+        },
+        "password": {
+          "name": "Password",
+          "desc": "Password of the user account to create",
+          "type": 4,
+          "maxlength": 30,
+          "value": ""
+        },
+        "accessPermission": {
+          "name": "Access Permission",
+          "desc": "Set account to be local, remote or both",
+          "type": 3,
+          "values": {
+            "0": "Local only",
+            "1": "Network only",
+            "2": "All (Local & Network)"
+          },
+          "value": "2"
+        },
+        "realms": {
+          "name": "Realms",
+          "desc": "Set account permissions",
+          "type": 5,
+          "values": {
+            "2": "Redirection",
+            "3": "PT Administration",
+            "4": "Hardware Asset",
+            "5": "Remote Control",
+            "6": "Storage,Event",
+            "7": "Manager",
+            "8": "Storage Admin",
+            "9": "Agent Presence Local",
+            "10": "Agent Presence Remote",
+            "11": "Circuit Breaker",
+            "12": "Network Time",
+            "13": "General Information",
+            "14": "Firmware Update",
+            "15": "EIT",
+            "16": "LocalUN",
+            "17": "Endpoint Access Control",
+            "18": "Endpoint Access Control Admin",
+            "19": "Event Log Reader",
+            "20": "Audit Log",
+            "21": "ACL Realm",
+            "24": "Local System"
+          },
+          "value": [ "3" ]
+        }
+      }
+    },
+    "AMT-Accounts-RemoveDigestUser": {
+      "name": "Accounts - Remove Digest User",
+      "desc": "Remove a digest user account from Intel AMT",
+      "code": "set ToggleAccount \"%%%name%%%\"\r\n\r\n# Fetch all of the account handles\r\nprint \"Fetching account handles...\"\r\njsonparse wsargs \"%7B %22StartIndex%22:1 %7D\"\r\nwsexec \"AMT_AuthorizationService\" \"EnumerateUserAclEntries\" wsargs \"\"\r\njump :error-%%%~%%% wsman_result \"!=\" 200\r\nset AccountHandles AMT_AuthorizationService.Body.Handles\r\nset wsargs\r\nset AMT_AuthorizationService\r\nset wsman_result\r\nlength AccountHandlesCount AccountHandles\r\n\r\n# Get all of the account information\r\nprint \"Fetching all account information...\"\r\nset i 0\r\n:fetchAccountLoop-%%%~%%%\r\nset fetchHandle AccountHandles.{i}\r\njsonparse wsargs \"%7B %22Handle%22:{fetchHandle} %7D\"\r\nwsexec \"AMT_AuthorizationService\" \"GetAclEnabledState\" wsargs \"\"\r\njump :error-%%%~%%% wsman_result \"!=\" 200\r\nset AccountEnabled{i} AMT_AuthorizationService.Body.Enabled\r\nwsexec \"AMT_AuthorizationService\" \"GetUserAclEntryEx\" wsargs \"\"\r\njump :error-%%%~%%% wsman_result \"!=\" 200\r\nset AccountName{i} AMT_AuthorizationService.Body.DigestUsername\r\nset AccountAccess{i} AMT_AuthorizationService.Body.AccessPermission\r\nset AccountRealms{i} AMT_AuthorizationService.Body.Realms\r\nadd i i 1\r\njump :fetchAccountLoop-%%%~%%% i \"<\" AccountHandlesCount\r\nset AMT_AuthorizationService\r\nset fetchHandle\r\nset wsargs\r\n\r\n# Search for a matching account\r\nprint \"Searching accounts...\"\r\nset i 0\r\n:searchAccountLoop-%%%~%%%\r\nset searchHandle AccountHandles.{i}\r\njump :foundAccount AccountName{i} \"=\" ToggleAccount\r\nadd i i 1\r\njump :searchAccountLoop-%%%~%%% i \"<\" AccountHandlesCount\r\njump :end-%%%~%%%\r\n\r\n# Account found, delete it\r\n:foundAccount\r\nprint \"Account {ToggleAccount} found at index {i}, deleting it...\"\r\nset deleteHandle AccountHandles.{i}\r\njsonparse wsargs \"%7B %22Handle%22:{deleteHandle} %7D\"\r\nwsexec \"AMT_AuthorizationService\" \"RemoveUserAclEntry\" wsargs \"\"\r\njump :error-%%%~%%% wsman_result \"!=\" 200\r\nprint \"Done, account {ToggleAccount} deleted.\"\r\nset PullUserInfo 1\r\njump :end\r\n\r\n# End of script\r\njump :end\r\n:error-%%%~%%%\r\nprint \"Call failed with error {wsman_result}\"\r\n:end-%%%~%%%",
+      "vars": {
+        "name": {
+          "name": "Name",
+          "desc": "Name of the user account to remove",
+          "type": 1,
+          "maxlength": 30,
+          "value": ""
+        }
+      }
+    },
+    "AMT-Accounts-PrintAll": {
+      "name": "Accounts - Print Users",
+      "desc": "Display all digest user accounts from Intel AMT",
+      "code": "# Fetch all of the account handles\r\nprint \"Fetching account handles...\"\r\njsonparse wsargs \"%7B %22StartIndex%22:1 %7D\"\r\nwsexec \"AMT_AuthorizationService\" \"EnumerateUserAclEntries\" wsargs \"\"\r\njump :error-%%%~%%% wsman_result \"!=\" 200\r\nset AccountHandles AMT_AuthorizationService.Body.Handles\r\nset wsargs\r\nset AMT_AuthorizationService\r\nset wsman_result\r\nlength AccountHandlesCount AccountHandles\r\n\r\n# Get all of the account information\r\nprint \"Fetching all account information...\"\r\nset i 0\r\n:fetchAccountLoop-%%%~%%%\r\nset fetchHandle AccountHandles.{i}\r\njsonparse wsargs \"%7B %22Handle%22:{fetchHandle} %7D\"\r\nwsexec \"AMT_AuthorizationService\" \"GetAclEnabledState\" wsargs \"\"\r\njump :error-%%%~%%% wsman_result \"!=\" 200\r\nset AccountEnabled{i} AMT_AuthorizationService.Body.Enabled\r\nwsexec \"AMT_AuthorizationService\" \"GetUserAclEntryEx\" wsargs \"\"\r\njump :error-%%%~%%% wsman_result \"!=\" 200\r\nprint \"AMT-ACCOUNT: {AMT_AuthorizationService.Body.DigestUsername}, {AMT_AuthorizationService.Body.AccessPermission}, [{AMT_AuthorizationService.Body.Realms}]\"\r\nadd i i 1\r\njump :fetchAccountLoop-%%%~%%% i \"<\" AccountHandlesCount\r\nset AMT_AuthorizationService\r\nset fetchHandle\r\nset wsargs\r\n\r\n# End of script\r\njump :end-%%%~%%%\r\n:error-%%%~%%%\r\nprint \"Call failed with error {wsman_result}\"\r\n:end-%%%~%%%"
+    },
+    "Basic-Add": {
+      "name": "Basic - Add",
+      "desc": "Add a value to a given variable",
+      "code": "add %%%var%%% %%%var%%% %%%value%%%",
+      "vars": {
+        "var": {
+          "name": "Name",
+          "desc": "Name of the variable to add to",
+          "type": 1,
+          "maxlength": 20,
+          "value": "SampleVariable"
+        },
+        "value": {
+          "name": "Value",
+          "desc": "Value to add to the variable",
+          "type": 1,
+          "value": "1"
+        }
+      }
+    },
+    "Basic-Disconnect": {
+      "name": "Basic - Disconnect",
+      "desc": "Disconnect from Intel AMT",
+      "code": "Disconnect"
+    },
+    "Basic-JumpLabel": {
+      "name": "Basic - Jump Target",
+      "desc": "Set a jump label. Other blocks can jump here.",
+      "code": ":%%%label%%%",
+      "vars": {
+        "label": {
+          "name": "Label",
+          "desc": "Name of the jump target label",
+          "type": 1,
+          "maxlength": 50,
+          "value": "SampleLabel"
+        }
+      }
+    },
+    "Basic-Jump": {
+      "name": "Basic - Jump",
+      "desc": "Jump to a given label",
+      "code": "jump :%%%label%%%",
+      "vars": {
+        "label": {
+          "name": "Label",
+          "desc": "Name of the jump target label",
+          "type": 1,
+          "maxlength": 50,
+          "value": "SampleLabel"
+        }
+      }
+    },
+    "Basic-JumpIf": {
+      "name": "Basic - Jump if",
+      "desc": "Jump to a given label if the condition is met",
+      "code": "jump :%%%label%%% %%%arg1%%% \"%%%comparator%%%\" %%%arg2%%%",
+      "vars": {
+        "label": {
+          "name": "Label",
+          "desc": "Name of the jump target label",
+          "type": 1,
+          "maxlength": 50,
+          "value": "SampleLabel"
+        },
+        "arg1": {
+          "name": "arg1",
+          "desc": "First variable to compare, use \"x\" for a string",
+          "type": 1,
+          "value": ""
+        },
+        "comparator": {
+          "name": "Comparator",
+          "desc": "How to compare both arguments",
+          "type": 3,
+          "values": {
+            "=": "=",
+            "!=": "!=",
+            "<": "<",
+            ">": ">",
+            "<=": "<=",
+            ">=": ">="
+          },
+          "value": "="
+        },
+        "arg2": {
+          "name": "arg2",
+          "desc": "Second variable to compare, use \"x\" for a string",
+          "type": 1,
+          "value": ""
+        }
+      }
+    },
+    "Basic-Print": {
+      "name": "Basic - Print",
+      "desc": "Print a string to the console",
+      "code": "print \"%%%printstring%%%\"",
+      "vars": {
+        "printstring": {
+          "name": "Value",
+          "desc": "String that will be printed to console, use urlescaping for special chars and use {x} to print variable x.",
+          "type": 1,
+          "value": "Sample String"
+        }
+      }
+    },
+    "Basic-ScriptSpeed": {
+      "name": "Basic - Script Speed",
+      "desc": "Set the speed of the script",
+      "code": "scriptspeed %%%delay%%%",
+      "vars": {
+        "delay": {
+          "name": "Delay",
+          "desc": "The delay in millisecond between execution of each script step. 200ms is 5 steps per second.",
+          "type": 2,
+          "maxlength": 4,
+          "value": 200
+        }
+      }
+    },
+    "Basic-Set": {
+      "name": "Basic - Set",
+      "desc": "Set a variable to a given value",
+      "code": "set %%%var%%% %%%value%%%",
+      "vars": {
+        "var": {
+          "name": "Name",
+          "desc": "Name of the variable to set",
+          "type": 1,
+          "maxlength": 20,
+          "value": "SampleVariable"
+        },
+        "value": {
+          "name": "Value",
+          "desc": "The new value to set to the variable",
+          "type": 1,
+          "value": "0"
+        }
+      }
+    },
+    "AMT-General-SetUserConsent": {
+      "name": "General - Set User Consent",
+      "desc": "Set the Intel AMT user consent mode",
+      "code": "split ws_optIn_query \"*IPS_OptInService\" ,\r\nwsbatchenum \"wsman_answer\" ws_optIn_query\r\njump :error-%%%~%%% wsman_result \"!=\" 200\r\nset wsman_answer.IPS_OptInService.response.OptInRequired %%%consentMode%%%\r\nwsput \"IPS_OptInService\" wsman_answer.IPS_OptInService.response\r\njump :error-%%%~%%% wsman_result \"!=\" 200\r\nset PullSystemStatus 1\r\njump :end-%%%~%%%\r\n:error-%%%~%%%\r\nprint \"Call failed with error {wsman_result}\"\r\n:end-%%%~%%%\r\n",
+      "vars": {
+        "consentMode": {
+          "name": "Consent Mode",
+          "desc": "Intel AMT user consent mode",
+          "type": 3,
+          "values": {
+            "0": "Not Required",
+            "1": "Required for KVM only",
+            "0xFFFFFFFF": "Always Required"
+          },
+          "value": "0"
+        }
+      }
+    },
+    "AMT-General-ActiveFeatures": {
+      "name": "General - Active Features",
+      "desc": "Set the Intel AMT active features",
+      "code": "split ws_optIn_query \"*AMT_RedirectionService\" ,\r\nwsbatchenum \"wsman_answer\" ws_optIn_query\r\njump :error-%%%~%%% wsman_result \"!=\" 200\r\nset wsman_answer.AMT_RedirectionService.response.ListenerEnabled \"%%%listenerEnabled%%%\"\r\nset wsman_answer.AMT_RedirectionService.response.EnabledState \"%%%enabledState%%%\"\r\njsonparse wsargs \"%7B %22RequestedState%22:%22%%%enabledState%%%%22 %7D\"\r\nwsexec \"AMT_RedirectionService\" \"RequestStateChange\" wsargs\r\nwsput \"AMT_RedirectionService\" wsman_answer.AMT_RedirectionService.response\r\njump :error-%%%~%%% wsman_result \"!=\" 200\r\nset PullSystemStatus \"1\"\r\njump :end-%%%~%%%\r\n:error-%%%~%%%\r\nprint \"Call failed with error {wsman_result}\"\r\n:end-%%%~%%%\r\n",
+      "vars": {
+        "listenerEnabled": {
+          "name": "Redirection Port",
+          "desc": "Enable or disable the Intel AMT redirection port (TCP:16993/16995)",
+          "type": 3,
+          "values": {
+            "true": "Enabled",
+            "false": "Disabled"
+          },
+          "value": "true"
+        },
+        "enabledState": {
+          "name": "SOL/IDER Feature",
+          "desc": "Enable or disable the Intel AMT Serial-over-LAN and IDER features",
+          "type": 3,
+          "values": {
+            "32768": "Disabled",
+            "32769": "IDER only",
+            "32770": "Serial-over-LAN only",
+            "32771": "IDER & SOL enabled"
+          },
+          "value": "32771"
+        }
+      }
+    },
+    "AMT-General-PrintUserConsent": {
+      "name": "General - Print User Consent",
+      "desc": "Display the Intel AMT user consent mode",
+      "code": "split ws_optIn_query \"*IPS_OptInService\" ,\r\nwsbatchenum \"wsman_answer\" ws_optIn_query\r\njump :error-%%%~%%% wsman_result \"!=\" 200\r\nprint \"Consent mode: {wsman_answer.IPS_OptInService.response.OptInRequired}\"\r\njump :end-%%%~%%%\r\n:error-%%%~%%%\r\nprint \"Call failed with error {wsman_result}\"\r\n:end-%%%~%%%\r\n"
+    },
+    "AMT-General-SetHostname": {
+      "name": "General - Set Hostname",
+      "desc": "Set the Intel AMT KVM feature to enabled or disabled",
+      "code": "split ws_general_query \"*AMT_GeneralSettings\" ,\r\nwsbatchenum \"wsman_answer\" ws_general_query\r\njump :error-2 wsman_result \"!=\" 200\r\nset wsman_answer.AMT_GeneralSettings.response.HostName \"%%%hostname%%%\"\r\nset wsman_answer.AMT_GeneralSettings.response.DomainName \"%%%domainname%%%\"\r\nwsput \"AMT_GeneralSettings\" wsman_answer.AMT_GeneralSettings.response\r\njump :error-2 wsman_result \"!=\" 200\r\nset PullSystemStatus \"1\"\r\njump :end-2\r\n:error-2\r\nprint \"Call failed with error {wsman_result}\"\r\n:end-2\r\n",
+      "vars": {
+        "hostname": {
+          "name": "Hostname",
+          "desc": "The hostname Intel AMT will use while in Sx state",
+          "type": 1,
+          "maxlength": 30,
+          "value": ""
+        },
+        "domainname": {
+          "name": "Domain",
+          "desc": "The domain name Intel AMT will use while in Sx state",
+          "type": 1,
+          "maxlength": 30,
+          "value": ""
+        }
+      }
+    },
+    "AMT-General-SetPingResponse": {
+      "name": "General - Set Ping Response",
+      "desc": "Set the Intel AMT response to ICMP and RMCP ping requests",
+      "code": "split ws_general_query \"*AMT_GeneralSettings\" ,\r\nwsbatchenum \"wsman_answer\" ws_general_query\r\njump :error-2 wsman_result \"!=\" 200\r\nset wsman_answer.AMT_GeneralSettings.response.PingResponseEnabled \"%%%icmpPingResponse%%%\"\r\nset wsman_answer.AMT_GeneralSettings.response.RmcpPingResponseEnabled \"%%%rmcpPingResponse%%%\"\r\nwsput \"AMT_GeneralSettings\" wsman_answer.AMT_GeneralSettings.response\r\njump :error-2 wsman_result \"!=\" 200\r\nset PullSystemStatus \"1\"\r\njump :end-2\r\n:error-2\r\nprint \"Call failed with error {wsman_result}\"\r\n:end-2\r\n",
+      "vars": {
+        "icmpPingResponse": {
+          "name": "ICMP Ping",
+          "desc": "Enable or disable the Intel AMT response to ICMP ping",
+          "type": 3,
+          "values": {
+            "true": "Enabled",
+            "false": "Disabled"
+          },
+          "value": "true"
+        },
+        "rmcpPingResponse": {
+          "name": "RMCP Ping",
+          "desc": "Enable or disable the Intel AMT response to RMCP ping",
+          "type": 3,
+          "values": {
+            "true": "Enabled",
+            "false": "Disabled"
+          },
+          "value": "true"
+        }
+      }
+    },
+    "AMT-KVM-SetState": {
+      "name": "KVM - Set State",
+      "desc": "Set the Intel AMT KVM feature to enabled or disabled",
+      "code": "jsonparse wsargs \"%7B %22RequestedState%22:%22%%%kvmEnabled%%%%22 %7D\"\r\nwsexec \"CIM_KVMRedirectionSAP\" \"RequestStateChange\" wsargs\r\njump :error-%%%~%%% wsman_result \"!=\" 200\r\nset PullSystemStatus \"1\"\r\njump :end-%%%~%%%\r\n:error-%%%~%%%\r\nprint \"Call failed with error {wsman_result}\"\r\n:end-%%%~%%%\r\n",
+      "vars": {
+        "kvmEnabled": {
+          "name": "KVM State",
+          "desc": "Enable or disable the Intel AMT KVM feature",
+          "type": 3,
+          "values": {
+            "2": "Enabled",
+            "3": "Disabled"
+          },
+          "value": "2"
+        }
+      }
+    }
+  }
+}
+
+
+
