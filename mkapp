@@ -1,4 +1,4 @@
-#!/bin/ksh
+#!/bin/bash
 
 NAME=MeshCommander
 BASE=${0%/*}
@@ -9,6 +9,7 @@ APP=${BUILD}/${NAME}/osx64/${NAME}.app
 export CODESIGN_ALLOCATE="$(xcrun -find codesign_allocate)"
 ID="$(security find-identity | awk '/ID Application/ {print $2}' | uniq)"
 
+## Script to pass build parameters to nw-builder
 cat<<EOF>>${JS}
 var NwBuilder = require('nw-builder');
 var nw = new NwBuilder({
@@ -27,11 +28,15 @@ nw.build().then(function () {
 });
 EOF
 
+## Build the application
 node ${JS}
 
+## Check for successful completion, or otherwise abort the script
 if [[ $? == 0 ]]
 then
 	echo ""
+        ## The InfoPlist.strings file provides details that appear
+	## in the application's "About" menu item
 	echo "Copying \"InfoPlist.strings\" to \"en.lproj\" directory"
 	cp ${BASE}/files/InfoPlist.strings ${APP}/Contents/Resources/en.lproj/
 	NWVER=$(ls ${APP}/Contents/Versions/ | awk '{gsub(/\//,""); print}')
@@ -41,6 +46,7 @@ else
 	exit 1
 fi
 
+## Sign and verify signature
 echo "Signing Application"
 echo ""
 
@@ -56,6 +62,7 @@ echo ""
 codesign --verify --deep --display --verbose=4 "${APP}"
 echo ""
 
+## Check if Gatekeeper will allow application execution
 echo ""
 echo "Veriyfing Gatekeeper acceptance..."
 echo ""
