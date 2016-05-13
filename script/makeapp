@@ -1,0 +1,66 @@
+#!/bin/ksh
+
+NAME=MeshCommander
+BASE=${0%/*}
+TMP=/tmp
+JS=${TMP}/appbuild.js
+BUILD=${BASE}/build
+APP=${BUILD}/${NAME}/osx64/${NAME}.app
+export CODESIGN_ALLOCATE="$(xcrun -find codesign_allocate)"
+ID="$(security find-identity | awk '/ID Application/ {print $2}' | uniq)"
+
+cat<<EOF>>${JS}
+var NwBuilder = require('nw-builder');
+var nw = new NwBuilder({
+    files: './source/**',
+    platforms: ['osx64'],
+    buildType: 'default',
+    macIcns: './files/meshcommander.icns',
+    macPlist: './files/Info.plist'
+});
+
+// .build() returns a promise but also supports a plain callback approach as well
+nw.build().then(function () {
+   console.log('all done!');
+}).catch(function (error) {
+    console.error(error);
+});
+EOF
+
+node ${JS}
+
+if [[ $? == 0 ]]
+then
+	echo ""
+	echo "Copying \"InfoPlist.strings\" to \"en.lproj\" directory"
+	cp ${BASE}/files/InfoPlist.strings ${APP}/Contents/Resources/en.lproj/
+	NWVER=$(ls ${APP}/Contents/Versions/ | awk '{gsub(/\//,""); print}')
+	echo ""
+else
+	echo "ERROR: Failed to package ${APP##*/}"
+	exit 1
+fi
+
+echo "Signing Application"
+echo ""
+
+codesign --deep --force --verify --verbose --sign "${ID}" "${APP}/Contents/Versions/${NWVER}/nwjs Framework.framework/Helpers/crashpad_handler"
+codesign --deep --force --verify --verbose --sign "${ID}" "${APP}/Contents/Versions/${NWVER}/nwjs Framework.framework/Resources/APP_mode_loader.APP/Contents/MacOS/APP_mode_loader"
+codesign --deep --force --verify --verbose --sign "${ID}" "${APP}/Contents/Versions/${NWVER}/nwjs Helper.APP/Contents/MacOS/nwjs Helper"
+codesign --deep --force --verify --verbose --sign "${ID}" "${APP}"
+
+echo ""
+echo "Verifying signature"
+echo ""
+
+codesign --verify --deep --display --verbose=4 "${APP}"
+echo ""
+
+echo ""
+echo "Veriyfing Gatekeeper acceptance..."
+echo ""
+
+spctl --ignore-cache --no-cache --assess --type execute --verbose=4 "${APP}"
+echo ""
+
+rm ${JS}

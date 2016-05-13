@@ -15,11 +15,11 @@
     <key>CFBundleIconFile</key>
     <string>nw.icns</string>
     <key>CFBundleIdentifier</key>
-    <string>com.intel.meshcommander</string>
+    <string>com.intel.MeshCommander</string>
     <key>CFBundleInfoDictionaryVersion</key>
     <string>6.0</string>
     <key>CFBundleName</key>
-    <string>meshcommander</string>
+    <string>MeshCommander</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleShortVersionString</key>
@@ -55,7 +55,7 @@
       </dict>
     </array>
     <key>CFBundleVersion</key>
-    <string>0.2.0</string>
+    <string></string>
     <key>DTSDKBuild</key>
     <string>14D125</string>
     <key>DTSDKName</key>
