@@ -4,6 +4,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge"> 
     <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
     <meta name="format-detection" content="telephone=no">
+    <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgo="> <!-- Stop favicon.ico from loading -->
 
     <style>body {
     height: 100%;
@@ -495,6 +496,7 @@ th {
             </div>
             
             
+            
             <p id="go1" class="nav1" onclick="go(1)"><a>System Status</a></p>
             
             <p id="go14" class="nav1" onclick="go(14)"><a>Remote Desktop</a></p>
@@ -510,6 +512,9 @@ th {
             
             
             <p id="go15" class="nav1" onclick="go(15)"><a>Audit Log</a></p>
+            
+            
+            <p id="go21" class="nav1" onclick="go(21)"><a>Storage</a></p>
             
             
             <p id="go8" class="nav1" onclick="go(8)"><a>Network Settings</a></p>
@@ -622,7 +627,7 @@ th {
                     <tr>
                         <td style="padding-top:2px;padding-bottom:2px;background:#CCC">
                             <div style="float:right; text-align:right">
-                                <input onkeyup="sendTermInputKeys(event)" autocorrect="off" autocapitalize="off" style="opacity:0; width:0; height:0; font-size:1px" onblur="keyInputBlur()">
+                                <input onkeyup="sendTermInputKeys(event)" autocorrect="off" autocapitalize="off" style="opacity:0;width:0;height:0;font-size:1px" onblur="keyInputBlur()">
                                 <span id="id_p13power"></span>&nbsp;
                                 
                                 <input type="button" onkeypress="return false" onkeydown="return false" class="cadbutton" value="Power Actions..." onclick="showPowerActionDlg()" style="margin-right:3px">
@@ -635,7 +640,7 @@ th {
                                 
                             </div>
                             <div>
-                                &nbsp;<input type="button" id="idx_connectbutton2" value="Connect" onclick="connectTerminal(event)" onkeypress="return false" onkeydown="return false" disabled="disabled">
+                                &nbsp;<input type="button" id="idx_connectbutton2" value="Connect" onclick="connectTerminal(event)" disabled="disabled">
                                 &nbsp;<span id="id_termstatus">Disconnected.</span>
                             </div>
                         </td>
@@ -797,6 +802,12 @@ th {
                 <textarea id="console" style="width:100%;height:80px;resize:vertical;margin:0;padding:0;user-select:text;-webkit-user-select:text;-khtml-user-select:text;-moz-user-select:text;-ms-user-select:text" readonly=""></textarea>
                 </div>
             
+            
+            <div id="p21" style="display:none">
+                <h1>Storage</h1>
+                <span id="id_TableSystemStorage"></span>
+            </div>
+            
         </div>
     </div>
     <div id="dialog" style="z-index:1000;background-color:#EEE;box-shadow:0px 0px 15px #666;font-family:Arial, Helvetica, sans-serif;border-radius:5px;position:fixed;top:160px;width:400px;display:none">
@@ -819,7 +830,7 @@ th {
                     <div>Granted Permissions</div>
                     <ul id="id_d2realms" style="list-style-type:none;height:100px;overflow:auto;width:100%;border: 1px solid #000;background-color:white;overflow-x:hidden;margin:0;padding:0"></ul>
                 </div>
-                <div style="font-size:10px"><br>*Minimum 8 characters with upper and lowercase, 0-9, and one of !@#$%^&*()</div>
+                <div style="font-size:10px"><br>*Minimum 8 characters with upper and lowercase, 0-9, and one of !@#$%^&amp;*()</div>
             </div>
             
             <div id="dialog3" style="margin:auto;text-align:center;margin:3px">
@@ -837,7 +848,7 @@ th {
                 <div id="d4digest">
                     <div style='height:26px'><input id="d4username" value="admin" style="float:right;width:200px" onkeyup="updateComputerDialog()"><div>Username</div></div>
                     <div style='height:26px'><input id="d4password" type="password" style="float:right;width:200px" onkeyup="updateComputerDialog()"><div>Password*</div></div>
-                    <div style="font-size:10px"><br>*Minimum 8 characters with upper and lowercase, 0-9, and one of !@#$%^&*()</div>
+                    <div style="font-size:10px"><br>*Minimum 8 characters with upper and lowercase, 0-9, and one of !@#$%^&amp;*()</div>
                 </div>
                 <div id="d4kerb">
                     <div style='height:26px'><input id="d4kerberos" style="float:right;width:200px" onkeyup="updateComputerDialog()"><div>Token Request*</div></div>
@@ -883,11 +894,14 @@ th {
                     </select>
                     <div>Image Encoding</div>
                 </div>
-                <div style="height:60px">
-                    <div style="float:right;border:1px solid #666;width:200px;height:60px;overflow-y:scroll;background-color:white">
+                <div style="height:80px">
+                    <div style="float:right;border:1px solid #666;width:200px;height:80px;overflow-y:scroll;background-color:white">
+                        
                         <input type="checkbox" id='d7showfocus'>Show Focus Tool<br>
+                        
                         <input type="checkbox" id='d7showcursor'>Show Local Mouse Cursor<br>
                         <input type="checkbox" id='d7showcad'>Show Ctrl-Alt-Del<br>
+                        <input type="checkbox" id='d7limitFrameRate'>Limit Frame Rate<br>
                     </div>
                     <div>Other Settings</div>
                 </div>
@@ -1061,7 +1075,6 @@ th {
     
     
     
-
 </body>
 </html>
 <script>/** 
@@ -1069,6 +1082,10 @@ th {
 * @author Ylian Saint-Hilaire
 * @version v0.0.1b
 */
+
+// Add startsWith for IE browser
+if (!String.prototype.startsWith) { String.prototype.startsWith = function (str) { return this.lastIndexOf(str, 0) === 0; }; }
+if (!String.prototype.endsWith) { String.prototype.endsWith = function (str) { return this.indexOf(str, this.length - str.length) !== -1; }; }
 
 // Quick UI functions, a bit of a replacement for jQuery
 //function Q(x) { if (document.getElementById(x) == null) { console.log('Invalid element: ' + x); } return document.getElementById(x); }                            // "Q"
@@ -1163,7 +1180,7 @@ function trademarks(x) { return x.replace(/\(R\)/g, '&reg;').replace(/\(TM\)/g, 
 /** 
 * @description Intel(r) AMT WSMAN communication using Node.js TLS
 * @author Ylian Saint-Hilaire
-* @version v0.2.0
+* @version v0.2.0b
 */
 
 // Construct a MeshServer object
@@ -1178,6 +1195,8 @@ var CreateWsmanComm = function (host, port, user, pass, tls) {
     obj.authcounter = 0;
 
     obj.Address = '/wsman';
+    obj.user = user;
+    obj.pass = pass;
     obj.challengeParams = null;
     obj.noncecounter = 1;
     obj.authcounter = 0;
@@ -1195,24 +1214,18 @@ var CreateWsmanComm = function (host, port, user, pass, tls) {
     obj.pass = pass;
     obj.xtls = tls;
 
-    // Setup Kerberos if needed
-    if (user == '*') {
-        var k = require('krb-ticket');
-        if (k && k.initialize() == 0) { obj.kerberos = k; }
-    }
-
     // Private method
-    //obj.Debug = function (msg) { console.log(msg); }
+    //obj.Debug = function (msg) { /*console.log(msg);*/ }
 
     // Private method
     //   pri = priority, if set to 1, the call is high priority and put on top of the stack.
-    obj.PerformAjax = function (postdata, callback, tag, pri) {
+    obj.PerformAjax = function (postdata, callback, tag, pri, url, action) {
         if ((obj.ActiveAjaxCount == 0 || ((obj.ActiveAjaxCount < obj.MaxActiveAjaxCount) && (obj.challengeParams != null))) && obj.PendingAjax.length == 0) {
             // There are no pending AJAX calls, perform the call now.
             obj.PerformAjaxEx(postdata, callback, tag);
         } else {
             // If this is a high priority call, put this call in front of the array, otherwise put it in the back.
-            if (pri == 1) { obj.PendingAjax.unshift([postdata, callback, tag]); } else { obj.PendingAjax.push([postdata, callback, tag]); }
+            if (pri == 1) { obj.PendingAjax.unshift([postdata, callback, tag, url, action]); } else { obj.PendingAjax.push([postdata, callback, tag, url, action]); }
         }
     }
 
@@ -1220,27 +1233,28 @@ var CreateWsmanComm = function (host, port, user, pass, tls) {
     obj.PerformNextAjax = function () {
         if (obj.ActiveAjaxCount >= obj.MaxActiveAjaxCount || obj.PendingAjax.length == 0) return;
         var x = obj.PendingAjax.shift();
-        obj.PerformAjaxEx(x[0], x[1], x[2]);
+        obj.PerformAjaxEx(x[0], x[1], x[2], x[3], x[4]);
         obj.PerformNextAjax();
     }
 
     // Private method
-    obj.PerformAjaxEx = function (postdata, callback, tag) {
-        if (obj.FailAllError != 0) { obj.gotNextMessagesError({ status: obj.FailAllError }, 'error', null, [postdata, callback, tag]); return; }
+    obj.PerformAjaxEx = function (postdata, callback, tag, url, action) {
+        if (obj.FailAllError != 0) { obj.gotNextMessagesError({ status: obj.FailAllError }, 'error', null, [postdata, callback, tag, url, action]); return; }
         if (!postdata) postdata = "";
         //obj.Debug("SEND: " + postdata); // DEBUG
+
         obj.ActiveAjaxCount++;
-        return obj.PerformAjaxExNodeJS(postdata, callback, tag);
+        return obj.PerformAjaxExNodeJS(postdata, callback, tag, url, action);
     }
 
     // NODE.js specific private method
     obj.pendingAjaxCall = [];
 
     // NODE.js specific private method
-    obj.PerformAjaxExNodeJS = function (postdata, callback, tag) { obj.PerformAjaxExNodeJS2(postdata, callback, tag, 5); }
+    obj.PerformAjaxExNodeJS = function (postdata, callback, tag, url, action) { obj.PerformAjaxExNodeJS2(postdata, callback, tag, url, action, 5); }
 
     // NODE.js specific private method
-    obj.PerformAjaxExNodeJS2 = function (postdata, callback, tag, retry) {
+    obj.PerformAjaxExNodeJS2 = function (postdata, callback, tag, url, action, retry) {
         if (retry <= 0 || obj.FailAllError != 0) {
             // Too many retry, fail here.
             obj.ActiveAjaxCount--;
@@ -1248,31 +1262,19 @@ var CreateWsmanComm = function (host, port, user, pass, tls) {
             obj.PerformNextAjax();
             return;
         }
-        obj.pendingAjaxCall.push([postdata, callback, tag, retry]);
+        obj.pendingAjaxCall.push([postdata, callback, tag, url, action, retry]);
         if (obj.socketState == 0) { obj.xxConnectHttpSocket(); }
-        else if (obj.socketState == 2) { obj.sendRequest(postdata); }
+        else if (obj.socketState == 2) { obj.sendRequest(postdata, url, action); }
     }
 
     // NODE.js specific private method
-    obj.sendRequest = function (postdata) {
-        var h = "POST /wsman HTTP/1.1\r\n";
-        if (user == '*' && obj.kerberos != null) {
-            if (obj.kticketSent == 0) {
-                // Kerberos authentication
-                var tokenrequest = 'HTTP/' + ((obj.pass == '') ? obj.host : obj.pass) + ':' + obj.port;
-                var ticketReturn = obj.kerberos.getTicket(tokenrequest);
-                // Check for SEC_E_OK or SEC_I_CONTINUE_NEEDED
-                if (ticketReturn.returnCode == 0 || ticketReturn.returnCode == 0x90312) {
-                    h += 'Authorization: Negotiate ' + ticketReturn.ticket + '\r\n';
-                    obj.kticketSent = 1;
-                } else {
-                    console.error('Unexpected Kerberos error code: ' + ticketReturn.returnCode);
-                }
-            }
-        } else if (obj.challengeParams != null) {
-            // Digest authentication
-            var response = hex_md5(hex_md5(obj.user + ':' + obj.challengeParams["realm"] + ':' + obj.pass) + ':' + obj.challengeParams["nonce"] + ':' + obj.noncecounter + ':' + obj.cnonce + ':' + obj.challengeParams["qop"] + ':' + hex_md5('POST:/wsman'));
-            h += 'Authorization: ' + obj.renderDigest({ "username": obj.user, "realm": obj.challengeParams["realm"], "nonce": obj.challengeParams["nonce"], "uri": "/wsman", "qop": obj.challengeParams["qop"], "response": response, "nc": obj.noncecounter++, "cnonce": obj.cnonce }) + '\r\n';
+    obj.sendRequest = function (postdata, url, action) {
+        url = url ? url : "/wsman";
+        action = action ? action : "POST";
+        var h = action + " " + url + " HTTP/1.1\r\n";
+        if (obj.challengeParams != null) {
+            var response = hex_md5(hex_md5(obj.user + ':' + obj.challengeParams["realm"] + ':' + obj.pass) + ':' + obj.challengeParams["nonce"] + ':' + obj.noncecounter + ':' + obj.cnonce + ':' + obj.challengeParams["qop"] + ':' + hex_md5(action + ':' + url));
+            h += 'Authorization: ' + obj.renderDigest({ "username": obj.user, "realm": obj.challengeParams["realm"], "nonce": obj.challengeParams["nonce"], "uri": url, "qop": obj.challengeParams["qop"], "response": response, "nc": obj.noncecounter++, "cnonce": obj.cnonce }) + '\r\n';
         }
         h += 'Content-Length: ' + postdata.length + '\r\n\r\n' + postdata;
         obj.xxSend(h);
@@ -1301,20 +1303,17 @@ var CreateWsmanComm = function (host, port, user, pass, tls) {
         obj.socketHeader = null;
         obj.socketData = '';
         obj.socketState = 1;
-        obj.kticketSent = 0;
         if (obj.xtls == false) {
             obj.socket = new obj.net.Socket();
             obj.socket.setEncoding('binary');
             obj.socket.on('data', obj.xxOnSocketData);
             obj.socket.on('close', obj.xxOnSocketClosed);
-            obj.socket.on('error', obj.xxOnSocketClosed);
             obj.socket.connect(obj.port, obj.host, obj.xxOnSocketConnected);
         } else {
             obj.socket = obj.tls.connect(obj.port, obj.host, { secureProtocol: 'TLSv1_method', rejectUnauthorized: false }, obj.xxOnSocketConnected);
             obj.socket.setEncoding('binary');
             obj.socket.on('data', obj.xxOnSocketData);
             obj.socket.on('close', obj.xxOnSocketClosed);
-            obj.socket.on('error', obj.xxOnSocketClosed);
         }
         obj.socket.setNoDelay(true); // Disable nagle. We will encode each WSMAN request as a single send block and want to send it at once. This may help Intel AMT handle pipelining?
     }
@@ -1328,7 +1327,7 @@ var CreateWsmanComm = function (host, port, user, pass, tls) {
 
     // NODE.js specific private method
     obj.xxOnSocketData = function (data) {
-        //obj.Debug("xxOnSocketData (" + data.length + "): " + data);
+        // obj.Debug("xxOnSocketData (" + data.length + "): " + data);
 
         if (typeof data === 'object') {
             // This is an ArrayBuffer, convert it to a string array (used in IE)
@@ -1372,7 +1371,6 @@ var CreateWsmanComm = function (host, port, user, pass, tls) {
                     if (clen < 0) return; // Chunk length not found, exit now and get more data.
                     // Chunk length if found, lets see if we can get the data.
                     csize = parseInt(obj.socketAccumulator.substring(0, clen), 16);
-                    if (isNaN(csize)) { obj.socket.destroy(); return; } // Critical error, close the socket and exit.
                     if (obj.socketAccumulator.length < clen + 2 + csize + 2) return;
                     // We got a chunk with all of the data, handle the chunck now.
                     var data = obj.socketAccumulator.substring(clen + 2, clen + 2 + csize);
@@ -1416,8 +1414,8 @@ var CreateWsmanComm = function (host, port, user, pass, tls) {
         if (obj.socket != null) { obj.socket.destroy(); obj.socket = null; }
         if (obj.pendingAjaxCall.length > 0) {
             var r = obj.pendingAjaxCall.shift();
-            var retry = r[3];
-            obj.PerformAjaxExNodeJS2(r[0], r[1], r[2], --retry);
+            var retry = r[5];
+            obj.PerformAjaxExNodeJS2(r[0], r[1], r[2], r[3], r[4], --retry);
         }
     }
 
@@ -1432,7 +1430,7 @@ var CreateWsmanComm = function (host, port, user, pass, tls) {
     // Cancel all pending queries with given status
     obj.CancelAllQueries = function (s) {
         while (obj.PendingAjax.length > 0) { var x = obj.PendingAjax.shift(); x[1](null, s, x[2]); }
-        if (obj.socket != null) { obj.socket.destroy(); obj.socket = null; obj.socketState = 0; }
+        if (obj.socket != null) { obj.socket.end(); obj.socket = null; obj.socketState = 0; }
     }
 
     // Private method
@@ -1851,13 +1849,15 @@ var CreateAmtRemoteIder = function (serverurl) {
 /** 
 * @description Intel(r) AMT WSMAN Stack
 * @author Ylian Saint-Hilaire
-* @version v0.2.2
+* @version v0.2.0
 */
 
 // Construct a MeshServer object
 var WsmanStackCreateService = function (host, port, user, pass, tls, extra) {
     var obj = {};
+    //obj.onDebugMessage = null;          // Set to a function if you want to get debug messages.
     obj.NextMessageId = 1;              // Next message number, used to label WSMAN calls.
+    obj.Address = '/wsman';
     obj.comm = CreateWsmanComm(host, port, user, pass, tls, extra);
 
     obj.PerformAjax = function (postdata, callback, tag, pri) {
@@ -1868,77 +1868,84 @@ var WsmanStackCreateService = function (host, port, user, pass, tls, extra) {
         }, tag, pri);
     }
 
+    // Private method
+    //obj.Debug = function (msg) { /*console.log(msg);*/ }
+
     // Cancel all pending queries with given status
     obj.CancelAllQueries = function (s) { obj.comm.CancelAllQueries(s); }
 
     // Get the last element of a URI string
     obj.GetNameFromUrl = function (resuri) {
         var x = resuri.lastIndexOf("/");
-        return (x == -1) ? resuri : resuri.substring(x + 1);
+        return (x == -1)?resuri:resuri.substring(x + 1);
     }
 
     // Perform a WSMAN PUT operation
     obj.ExecPut = function (resuri, putobj, callback, tag, pri) {
         var objname = obj.GetNameFromUrl(resuri), selector = "";
         if (putobj['InstanceID']) selector = "<w:SelectorSet><w:Selector Name=\"InstanceID\">" + putobj['InstanceID'] + "</w:Selector></w:SelectorSet>";
-        else selector = obj.xxPutObjToSelectorsXml(putobj);
-        var data = "http://schemas.xmlsoap.org/ws/2004/09/transfer/Put</a:Action><a:To>/wsman</a:To><w:ResourceURI>" + resuri + "</w:ResourceURI><a:MessageID>" + (obj.NextMessageId++) + "</a:MessageID><a:ReplyTo><a:Address>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</a:Address></a:ReplyTo><w:OperationTimeout>PT60S</w:OperationTimeout>" + selector + '</Header><Body>' + obj.xxPutObjToBodyXml(resuri, putobj);
+		else selector = obj.xxPutObjToSelectorsXml(putobj);
+        var data = "http://schemas.xmlsoap.org/ws/2004/09/transfer/Put</a:Action><a:To>" + obj.Address + "</a:To><w:ResourceURI>" + resuri + "</w:ResourceURI><a:MessageID>" + (obj.NextMessageId++) + "</a:MessageID><a:ReplyTo><a:Address>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</a:Address></a:ReplyTo><w:OperationTimeout>PT60.000S</w:OperationTimeout>" + selector + '</Header><Body>' + obj.xxPutObjToBodyXml(resuri, putobj);
         obj.PerformAjax(data + "</Body></Envelope>", callback, tag, pri);
     }
-
+		
     // Perform a WSMAN CREATE operation
     obj.ExecCreate = function (resuri, putobj, callback, tag, pri) {
         var objname = obj.GetNameFromUrl(resuri), selector = "";
         if (putobj['InstanceID']) selector = "<w:SelectorSet><w:Selector Name=\"InstanceID\">" + putobj['InstanceID'] + "</w:Selector></w:SelectorSet>";
-        var data = "http://schemas.xmlsoap.org/ws/2004/09/transfer/Create</a:Action><a:To>/wsman</a:To><w:ResourceURI>" + resuri + "</w:ResourceURI><a:MessageID>" + (obj.NextMessageId++) + "</a:MessageID><a:ReplyTo><a:Address>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</a:Address></a:ReplyTo><w:OperationTimeout>PT60S</w:OperationTimeout>" + selector + "</Header><Body><g:" + objname + " xmlns:g=\"" + resuri + "\">";
-        for (var i in putobj) { if (putobj[i] != null) { if (Array.isArray(putobj[i])) { for (var x in putobj[i]) { data += "<g:" + i + ">" + putobj[i][x] + "</g:" + i + ">"; } } else { data += "<g:" + i + ">" + putobj[i] + "</g:" + i + ">"; } } }
+        var data = "http://schemas.xmlsoap.org/ws/2004/09/transfer/Create</a:Action><a:To>" + obj.Address + "</a:To><w:ResourceURI>" + resuri + "</w:ResourceURI><a:MessageID>" + (obj.NextMessageId++) + "</a:MessageID><a:ReplyTo><a:Address>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</a:Address></a:ReplyTo><w:OperationTimeout>PT60S</w:OperationTimeout>" + selector + "</Header><Body><g:" + objname + " xmlns:g=\"" + resuri + "\">";
+        for (var n in putobj) { data += "<g:" + n + ">" + putobj[n] + "</g:" + n + ">" } 
         obj.PerformAjax(data + "</g:" + objname + "></Body></Envelope>", callback, tag, pri);
     }
 
+    // Perform a WSMAN CREATE operation
+    obj.ExecCreateXml = function (resuri, argsxml, callback, tag, pri) {
+        var objname = obj.GetNameFromUrl(resuri), selector = "";
+        obj.PerformAjax("http://schemas.xmlsoap.org/ws/2004/09/transfer/Create</a:Action><a:To>" + obj.Address + "</a:To><w:ResourceURI>" + resuri + "</w:ResourceURI><a:MessageID>" + (obj.NextMessageId++) + "</a:MessageID><a:ReplyTo><a:Address>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</a:Address></a:ReplyTo><w:OperationTimeout>PT60.000S</w:OperationTimeout></Header><Body><r:" + objname + " xmlns:r=\"" + resuri + "\">" + argsxml + "</r:" + objname + "></Body></Envelope>", callback, tag, pri);
+    }
+	
     // Perform a WSMAN DELETE operation
     obj.ExecDelete = function (resuri, putobj, callback, tag, pri) {
         var objname = obj.GetNameFromUrl(resuri), selector = "";
         if (putobj['InstanceID']) selector = "<w:SelectorSet><w:Selector Name=\"InstanceID\">" + putobj['InstanceID'] + "</w:Selector></w:SelectorSet>";
-        else if (putobj['Name']) selector = "<w:SelectorSet><w:Selector Name=\"Name\">" + putobj['Name'] + "</w:Selector></w:SelectorSet>";
-        else selector = putobj;
-        var data = "http://schemas.xmlsoap.org/ws/2004/09/transfer/Delete</a:Action><a:To>/wsman</a:To><w:ResourceURI>" + resuri + "</w:ResourceURI><a:MessageID>" + (obj.NextMessageId++) + "</a:MessageID><a:ReplyTo><a:Address>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</a:Address></a:ReplyTo><w:OperationTimeout>PT60S</w:OperationTimeout>" + selector + "</Header><Body /></Envelope>";
+        var data = "http://schemas.xmlsoap.org/ws/2004/09/transfer/Delete</a:Action><a:To>" + obj.Address + "</a:To><w:ResourceURI>" + resuri + "</w:ResourceURI><a:MessageID>" + (obj.NextMessageId++) + "</a:MessageID><a:ReplyTo><a:Address>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</a:Address></a:ReplyTo><w:OperationTimeout>PT60S</w:OperationTimeout>" + selector + "</Header><Body /></Envelope>";
         obj.PerformAjax(data, callback, tag, pri);
     }
 
     // Perform a WSMAN GET operation
     obj.ExecGet = function (resuri, callback, tag, pri) {
-        obj.PerformAjax("http://schemas.xmlsoap.org/ws/2004/09/transfer/Get</a:Action><a:To>/wsman</a:To><w:ResourceURI>" + resuri + "</w:ResourceURI><a:MessageID>" + (obj.NextMessageId++) + "</a:MessageID><a:ReplyTo><a:Address>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</a:Address></a:ReplyTo><w:OperationTimeout>PT60S</w:OperationTimeout></Header><Body /></Envelope>", callback, tag, pri);
+        obj.PerformAjax("http://schemas.xmlsoap.org/ws/2004/09/transfer/Get</a:Action><a:To>" + obj.Address + "</a:To><w:ResourceURI>" + resuri + "</w:ResourceURI><a:MessageID>" + (obj.NextMessageId++) + "</a:MessageID><a:ReplyTo><a:Address>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</a:Address></a:ReplyTo><w:OperationTimeout>PT60S</w:OperationTimeout></Header><Body /></Envelope>", callback, tag, pri);
     }
 
-    // Perform a WSMAN method call operation
+	// Perform a WSMAN method call operation
     obj.ExecMethod = function (resuri, method, args, callback, tag, pri, selectors) {
         var argsxml = "";
         for (var i in args) { if (args[i] != null) { if (Array.isArray(args[i])) { for (var x in args[i]) { argsxml += "<r:" + i + ">" + args[i][x] + "</r:" + i + ">"; } } else { argsxml += "<r:" + i + ">" + args[i] + "</r:" + i + ">"; } } }
         obj.ExecMethodXml(resuri, method, argsxml, callback, tag, pri, selectors);
     }
-
+	
     // Perform a WSMAN method call operation. The arguments are already formatted in XML.
     obj.ExecMethodXml = function (resuri, method, argsxml, callback, tag, pri, selectors) {
         var sel = "";
         if (selectors) { sel = '<wsman:SelectorSet xmlns:wsman="http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd">'; for (var i in selectors) { sel += '<wsman:Selector Name="' + i + '">' + selectors[i] + '</wsman:Selector>'; } sel += '</wsman:SelectorSet>'; }
-        obj.PerformAjax(resuri + "/" + method + "</a:Action><a:To>/wsman</a:To><w:ResourceURI>" + resuri + "</w:ResourceURI><a:MessageID>" + (obj.NextMessageId++) + "</a:MessageID><a:ReplyTo><a:Address>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</a:Address></a:ReplyTo><w:OperationTimeout>PT60S</w:OperationTimeout>" + sel + "</Header><Body><r:" + method + '_INPUT' + " xmlns:r=\"" + resuri + "\">" + argsxml + "</r:" + method + "_INPUT></Body></Envelope>", callback, tag, pri);
+        obj.PerformAjax(resuri + "/" + method + "</a:Action><a:To>" + obj.Address + "</a:To><w:ResourceURI>" + resuri + "</w:ResourceURI><a:MessageID>" + (obj.NextMessageId++) + "</a:MessageID><a:ReplyTo><a:Address>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</a:Address></a:ReplyTo><w:OperationTimeout>PT60S</w:OperationTimeout>" + sel + "</Header><Body><r:" + method + '_INPUT' + " xmlns:r=\"" + resuri + "\">" + argsxml + "</r:" + method + "_INPUT></Body></Envelope>", callback, tag, pri);
     }
 
     // Perform a WSMAN ENUM operation
     obj.ExecEnum = function (resuri, callback, tag, pri) {
-        obj.PerformAjax("http://schemas.xmlsoap.org/ws/2004/09/enumeration/Enumerate</a:Action><a:To>/wsman</a:To><w:ResourceURI>" + resuri + "</w:ResourceURI><a:MessageID>" + (obj.NextMessageId++) + "</a:MessageID><a:ReplyTo><a:Address>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</a:Address></a:ReplyTo><w:OperationTimeout>PT60S</w:OperationTimeout></Header><Body><Enumerate xmlns=\"http://schemas.xmlsoap.org/ws/2004/09/enumeration\" /></Body></Envelope>", callback, tag, pri);
+        obj.PerformAjax("http://schemas.xmlsoap.org/ws/2004/09/enumeration/Enumerate</a:Action><a:To>" + obj.Address + "</a:To><w:ResourceURI>" + resuri + "</w:ResourceURI><a:MessageID>" + (obj.NextMessageId++) + "</a:MessageID><a:ReplyTo><a:Address>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</a:Address></a:ReplyTo><w:OperationTimeout>PT60S</w:OperationTimeout></Header><Body><Enumerate xmlns=\"http://schemas.xmlsoap.org/ws/2004/09/enumeration\" /></Body></Envelope>", callback, tag, pri);
     }
 
     // Perform a WSMAN PULL operation
     obj.ExecPull = function (resuri, enumctx, callback, tag, pri) {
-        obj.PerformAjax("http://schemas.xmlsoap.org/ws/2004/09/enumeration/Pull</a:Action><a:To>/wsman</a:To><w:ResourceURI>" + resuri + "</w:ResourceURI><a:MessageID>" + (obj.NextMessageId++) + "</a:MessageID><a:ReplyTo><a:Address>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</a:Address></a:ReplyTo><w:OperationTimeout>PT60S</w:OperationTimeout></Header><Body><Pull xmlns=\"http://schemas.xmlsoap.org/ws/2004/09/enumeration\"><EnumerationContext>" + enumctx + "</EnumerationContext><MaxElements>99</MaxElements><MaxCharacters>9999</MaxCharacters></Pull></Body></Envelope>", callback, tag, pri);
+        obj.PerformAjax("http://schemas.xmlsoap.org/ws/2004/09/enumeration/Pull</a:Action><a:To>" + obj.Address + "</a:To><w:ResourceURI>" + resuri + "</w:ResourceURI><a:MessageID>" + (obj.NextMessageId++) + "</a:MessageID><a:ReplyTo><a:Address>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</a:Address></a:ReplyTo><w:OperationTimeout>PT60S</w:OperationTimeout></Header><Body><Pull xmlns=\"http://schemas.xmlsoap.org/ws/2004/09/enumeration\"><EnumerationContext>" + enumctx + "</EnumerationContext><MaxElements>99</MaxElements><MaxCharacters>9999</MaxCharacters></Pull></Body></Envelope>", callback, tag, pri);
     }
 
     // Private method
     obj.ParseWsman = function (xml) {
         try {
             if (!xml.childNodes) xml = turnToXml(xml);
-            var r = { Header: {} }, header = xml.getElementsByTagName("Header")[0], t;
+            var r = { Header:{} }, header = xml.getElementsByTagName("Header")[0], t;
             if (!header) header = xml.getElementsByTagName("a:Header")[0];
             if (!header) return null;
             for (var i = 0; i < header.childNodes.length; i++) {
@@ -1953,7 +1960,7 @@ var WsmanStackCreateService = function (host, port, user, pass, tls, extra) {
                 if (t.indexOf("_OUTPUT") == t.length - 7) { t = t.substring(0, t.length - 7); }
                 r.Header['Method'] = t;
                 r.Body = obj.xxParseWsmanRec(body.childNodes[0]);
-            }
+		    }
             return r;
         } catch (e) {
             console.log("Unable to parse XML: " + text);
@@ -1967,17 +1974,17 @@ var WsmanStackCreateService = function (host, port, user, pass, tls, extra) {
         for (var i = 0; i < node.childNodes.length; i++) {
             var child = node.childNodes[i];
             if (child.childElementCount == 0) { data = child.textContent; } else { data = obj.xxParseWsmanRec(child); }
-
+			
             if (data == 'true') data = true; // Convert 'true' into true
             if (data == 'false') data = false; // Convert 'false' into false
-            var childObj = data;
-            if (child.attributes.length > 0) {
-                childObj = { 'Value': data };
-                for (var j = 0; j < child.attributes.length; j++) {
-                    childObj['@' + child.attributes[j].name] = child.attributes[j].value;
-                }
-            }
-
+			var childObj = data;
+			if (child.attributes.length > 0) {
+				childObj = {'Value': data };
+				for(var j = 0; j < child.attributes.length; j++) {
+					childObj['@' + child.attributes[j].name] = child.attributes[j].value;
+				}
+			}
+			
             if (r[child.localName] instanceof Array) { r[child.localName].push(childObj); }
             else if (r[child.localName] == undefined) { r[child.localName] = childObj; }
             else { r[child.localName] = [r[child.localName], childObj]; }
@@ -1985,75 +1992,74 @@ var WsmanStackCreateService = function (host, port, user, pass, tls, extra) {
         return r;
     }
 
-    obj.xxPutObjToBodyXml = function (resuri, putObj) {
-        if (!resuri || putObj === undefined || putObj === null) return '';
-        var objname = obj.GetNameFromUrl(resuri);
-        var result = '<r:' + objname + ' xmlns:r="' + resuri + '">';
+	obj.xxPutObjToBodyXml = function(resuri, putObj) {
+		if(!resuri || putObj === undefined || putObj === null) return '';
+		var objname = obj.GetNameFromUrl(resuri);
+		var result = '<r:' + objname + ' xmlns:r="' + resuri + '">';
 
-        for (var prop in putObj) {
-            if (!putObj.hasOwnProperty(prop) || prop.indexOf('__') === 0 || prop.indexOf('@') === 0) continue;
-            if (putObj[prop] === undefined || putObj[prop] === null || typeof putObj[prop] === 'function') continue;
-            if (Array.isArray(putObj[prop])) { for (var i in putObj[prop]) { result += '<r:' + prop + '>' + putObj[prop][i] + '</r:' + prop + '>'; } }
-            else if (typeof putObj[prop] === 'object' && putObj[prop]['ReferenceParameters']) {
-                result += '<r:' + prop + '><a:Address>' + putObj[prop].Address + '</a:Address><a:ReferenceParameters><w:ResourceURI>' + putObj[prop]['ReferenceParameters']["ResourceURI"] + '</w:ResourceURI><w:SelectorSet>';
-                var selectorArray = putObj[prop]['ReferenceParameters']['SelectorSet']['Selector'];
-                if (Array.isArray(selectorArray)) {
-                    for (var i = 0; i < selectorArray.length; i++) {
-                        result += '<w:Selector' + obj.xxObjectToXmlAttributes(selectorArray[i]) + '>' + selectorArray[i]['Value'] + '</w:Selector>';
-                    }
-                }
-                else {
-                    result += '<w:Selector' + obj.xxObjectToXmlAttributes(selectorArray) + '>' + selectorArray['Value'] + '</w:Selector>';
-                }
-                result += '</w:SelectorSet></a:ReferenceParameters></r:' + prop + '>';
-            }
-            else {
-                result += '<r:' + prop + '>' + putObj[prop].toString() + '</r:' + prop + '>';
-            }
-        }
+		for (var prop in putObj) {
+			if (!putObj.hasOwnProperty(prop) || prop.indexOf('__') === 0 || prop.indexOf('@') === 0) continue;
+			if (putObj[prop] === undefined || putObj[prop] === null || typeof putObj[prop] === 'function' || Array.isArray(putObj[prop]) ) continue;
+			if (typeof putObj[prop] === 'object' && putObj[prop]['ReferenceParameters']) {
+				result += '<r:' + prop + '><a:Address>' + putObj[prop].Address + '</a:Address><a:ReferenceParameters><w:ResourceURI>' + putObj[prop]['ReferenceParameters']["ResourceURI"] + '</w:ResourceURI><w:SelectorSet>';
+				var selectorArray = putObj[prop]['ReferenceParameters']['SelectorSet']['Selector'];
+				if (Array.isArray(selectorArray)) {
+					for (var i=0; i< selectorArray.length; i++) {
+						result += '<w:Selector' + obj.xxObjectToXmlAttributes(selectorArray[i]) + '>' + selectorArray[i]['Value'] + '</w:Selector>';
+					}
+				}
+				else {
+					result += '<w:Selector' + obj.xxObjectToXmlAttributes(selectorArray) + '>' + selectorArray['Value'] + '</w:Selector>';
+				}
+				result += '</w:SelectorSet></a:ReferenceParameters></r:' + prop + '>';
+			}
+			else {
+				result += '<r:' + prop +'>' + putObj[prop].toString() + '</r:' + prop +'>';
+			}
+		}
 
-        result += '</r:' + objname + '>';
-        return result;
-    }
+		result += '</r:' + objname + '>';
+		return result;
+	}
 
-    /* 
+	/* 
 	convert 
 		{ @Name: 'InstanceID', @AttrName: 'Attribute Value'}
 	into
 		' Name="InstanceID" AttrName="Attribute Value" '
 	*/
-    obj.xxObjectToXmlAttributes = function (objWithAttributes) {
-        if (!objWithAttributes) return '';
-        var result = ' ';
-        for (var propName in objWithAttributes) {
-            if (!objWithAttributes.hasOwnProperty(propName) || propName.indexOf('@') !== 0) continue;
-            result += propName.substring(1) + '="' + objWithAttributes[propName] + '" ';
-        }
-        return result;
-    }
+	obj.xxObjectToXmlAttributes = function(objWithAttributes) {
+		if(!objWithAttributes) return '';
+		var result = ' ';
+		for (var propName in objWithAttributes) {
+			if (!objWithAttributes.hasOwnProperty(propName) || propName.indexOf('@') !== 0) continue;
+			result += propName.substring(1) + '="' + objWithAttributes[propName] + '" ';
+		}
+		return result;
+	}
 
-    obj.xxPutObjToSelectorsXml = function (selectorSet) {
-        if (!selectorSet) return '';
-        var result = '<w:SelectorSet>';
-        for (var propName in selectorSet) {
-            if (!selectorSet.hasOwnProperty(propName) || !selectorSet[propName]['ReferenceParameters']) continue;
-
-            result += '<w:Selector Name="' + propName + '"><a:EndpointReference>';
-            result += '<a:Address>' + selectorSet[propName]['Address'] + '</a:Address><a:ReferenceParameters><w:ResourceURI>' + selectorSet[propName]['ReferenceParameters']['ResourceURI'] + '</w:ResourceURI><w:SelectorSet>';
-            var selectorArray = selectorSet[propName]['ReferenceParameters']['SelectorSet']['Selector'];
-            if (Array.isArray(selectorArray)) {
-                for (var i = 0; i < selectorArray.length; i++) {
-                    result += '<w:Selector' + obj.xxObjectToXmlAttributes(selectorArray[i]) + '>' + selectorArray[i]['Value'] + '</w:Selector>';
-                }
-            }
-            else {
-                result += '<w:Selector' + obj.xxObjectToXmlAttributes(selectorArray) + '>' + selectorArray['Value'] + '</w:Selector>';
-            }
-            result += '</w:SelectorSet></a:ReferenceParameters></a:EndpointReference></w:Selector>';
-        }
-        result += '</w:SelectorSet>';
-        return result;
-    }
+	obj.xxPutObjToSelectorsXml = function(selectorSet) {
+		if (!selectorSet) return '';
+		var result = '<w:SelectorSet>';
+		for(var propName in selectorSet) {
+			if (!selectorSet.hasOwnProperty(propName) || !selectorSet[propName]['ReferenceParameters']) continue;
+			
+			result += '<w:Selector Name="' + propName + '"><a:EndpointReference>';
+			result += '<a:Address>' + selectorSet[propName]['Address'] + '</a:Address><a:ReferenceParameters><w:ResourceURI>' + selectorSet[propName]['ReferenceParameters']['ResourceURI'] + '</w:ResourceURI><w:SelectorSet>';
+			var selectorArray = selectorSet[propName]['ReferenceParameters']['SelectorSet']['Selector'];
+			if (Array.isArray(selectorArray)) {
+				for (var i = 0; i < selectorArray.length; i++) {
+					result += '<w:Selector' + obj.xxObjectToXmlAttributes(selectorArray[i]) + '>' + selectorArray[i]['Value'] + '</w:Selector>';
+				}
+			}
+			else {
+				result += '<w:Selector' + obj.xxObjectToXmlAttributes(selectorArray) + '>' + selectorArray['Value'] + '</w:Selector>';
+			}
+			result += '</w:SelectorSet></a:ReferenceParameters></a:EndpointReference></w:Selector>';
+		}
+		result += '</w:SelectorSet>';
+		return result;
+	}
 
     return obj;
 }
@@ -40082,7 +40088,7 @@ function script_decompile(binary, onecmd) {
 /** 
 * @description Remote Desktop
 * @author Ylian Saint-Hilaire
-* @version v0.0.2f
+* @version v0.0.2g
 */
 
 // Construct a MeshServer object
@@ -40114,9 +40120,9 @@ var CreateAmtRemoteDesktop = function (divid, scrolldiv) {
     obj.sparecache = {};
     obj.ZRLEfirst = 1;
     obj.onScreenSizeChange = null;
+    obj.frameRateDelay = 0;
 
     obj.rotation = 0;
-
 
 
 
@@ -40324,7 +40330,11 @@ var CreateAmtRemoteDesktop = function (divid, scrolldiv) {
                 }
                 if (--obj.state == 100) {
                     obj.state = 4;
-                    setTimeout(obj.xxSendRefresh, 100); // Hold 100 miliseconds before asking for a new frame
+                    if (obj.frameRateDelay == 0) {
+                        obj.xxSendRefresh(); // Ask for new frame
+                    } else {
+                        setTimeout(obj.xxSendRefresh, obj.frameRateDelay); // Hold x miliseconds before asking for a new frame
+                    }
                 }
             }
 
@@ -42552,7 +42562,7 @@ if (typeof module !== "undefined" && module.exports) {
         return saveAs;
     });
 }
-        var version = '0.2.0';
+        var version = '0.2.1';
         var urlvars = null;
         var amtstack;
         var wsstack = null;
@@ -42564,13 +42574,13 @@ if (typeof module !== "undefined" && module.exports) {
         var LoadingHtml = "<div style=text-align:center;padding-top:20px>Loading...<div>";
         var amtversion = 0;
         var amtversionmin = 0;
-        var amtFirstPull = 0; // Bitmask, Set this when the first pull request is made on a device: 1 = HardwareInfo, 2 = WirelessInfo
+        var amtFirstPull = 0; // Bitmask, Set this when the first pull request is made on a device: 1 = HardwareInfo, 2 = WirelessInfo, 4 = SystemDefense, 8 = Storage
 
         var desktop;
-        var desktopsettings = { encoding:2, showfocus:false, showmouse:true, showcad:true };
+        var desktopsettings = { encoding:2, showfocus:false, showmouse:true, showcad:true, limitFrameRate:false };
 
 
-        var webcompilerfeatures = ['AgentPresence','AuditLog','Certificates','ComputerSelector','ComputerSelector-Local','ContextMenus','Desktop','DesktopFocus','DesktopRotation','EventLog','FileSaver','HardwareInfo','IDER','Inflate','Look-Commander','Mode-NodeWebkit','NetworkSettings','PowerControl','RemoteAccess','Scripting','Scripting-Editor','SystemDefense','Terminal','USBSetup','Wireless','WsmanBrowser'];
+        var webcompilerfeatures = ['AgentPresence','AuditLog','Certificates','ComputerSelector','ComputerSelector-Local','ContextMenus','Desktop','DesktopFocus','DesktopRotation','EventLog','FileSaver','HardwareInfo','IDER','Inflate','Look-Commander','Mode-NodeWebkit','NetworkSettings','PowerControl','RemoteAccess','Scripting','Scripting-Editor','Storage','SystemDefense','Terminal','USBSetup','Wireless','WsmanBrowser'];
         var StatusStrs = ['Disconnected', 'Connecting...', 'Setup...', 'Connected'];
 
         var scriptstate;
@@ -42584,7 +42594,7 @@ if (typeof module !== "undefined" && module.exports) {
         
             
             var kerberos;
-            try { kerberos = require('krb-ticket'); } catch (e) {}
+            try { kerberos = require('krb-ticket'); } catch (e) { console.log("Unable to setup kerberos"); }
             if (!kerberos || kerberos.initialize() != 0) { kerberos = null; }
             
             
@@ -42719,7 +42729,9 @@ if (typeof module !== "undefined" && module.exports) {
             
 
             
+            
             scriptLoadStartingBlocks();
+            
             
         }
 
@@ -42727,6 +42739,9 @@ if (typeof module !== "undefined" && module.exports) {
             haltEvent(e);
             if (e.dataTransfer == null || e.dataTransfer.files.length != 1) return;
             var f = null, filename = e.dataTransfer.files[0].name.toLowerCase();
+            
+            if (currentView == 21) { UploadToStorage(e.dataTransfer.files[0], filename); return; }
+            
             
             if (currentView == 101) {
                 if (filename.endsWith('.mescript') || filename.endsWith('.meblocks')) { f = mscript_onScriptRead; }
@@ -42748,14 +42763,10 @@ if (typeof module !== "undefined" && module.exports) {
         function NW_SetupMainMenu(x) {
             var gui = require('nw.gui');
             var mainmenu = new gui.Menu({ type: 'menubar' });
-	    // Add Mac OS X specific menu
-	    var os = require('os');
-	    if(os.platform()  == "darwin") {
-		mainmenu.createMacBuiltin("MeshCommander",{
-			hideEdit: true,
-			hideWindow: true
-		});
-	    }			
+            
+            // Add Mac OS X specific menu
+            var os = require('os');
+            if (os.platform() == "darwin") { mainmenu.createMacBuiltin("MeshCommander",{ hideEdit: true, hideWindow: true }); }
             var filemenu = new gui.MenuItem({ label: 'File' });
             var filemenusub = new gui.Menu();
             var seperator = false;
@@ -42812,11 +42823,13 @@ if (typeof module !== "undefined" && module.exports) {
                 filemenusub.append(new gui.MenuItem({ label: 'Disconnect', click: disconnect }));
                 seperator = true;
             }
-	    // Explicit exit action not required on Mac. The MacBuiltin menu includes native option to quit application (Quit) 
-	    if(os.platform()  != "darwin") {            
-		if (seperator == true) filemenusub.append(new gui.MenuItem({ type: 'separator' }));
-            	filemenusub.append(new gui.MenuItem({ label: 'Exit', click: NW_Exit }));
-	    }
+            
+            // Explicit exit action not required on Mac. The MacBuiltin menu includes native option to quit application (Quit)
+            if (os.platform() != "darwin") {
+                if (seperator == true) filemenusub.append(new gui.MenuItem({ type: 'separator' }));
+                filemenusub.append(new gui.MenuItem({ label: 'Exit', click: NW_Exit }));
+            }
+
             filemenu.submenu  = filemenusub;
             if (x == 13) {
                 // Terminal
@@ -42950,7 +42963,7 @@ if (typeof module !== "undefined" && module.exports) {
             
             
             idx_terminalCaptureButton.value = 'Start Capture';
-            terminal.m.capture = null;
+            if (terminal.m.capture) delete terminal.m.capture;
             
             terminal.Stop();
             
@@ -42999,7 +43012,7 @@ if (typeof module !== "undefined" && module.exports) {
             amtstack.onProcessChanged = onProcessChanged;
 
             // Hide most of the left menu options, we will see them as we load data
-            for (var i = 2; i < 18; i++) { QV('go' + i, false); }
+            for (var i = 2; i < 22; i++) { QV('go' + i, false); }
             QV('go8', true); // Network Settings
             QV('go13', true); // Terminal
             QV('go14', true); // Desktop
@@ -43014,10 +43027,7 @@ if (typeof module !== "undefined" && module.exports) {
             QV('go17', true); // Remote Access
             
             
-            QV('go18', false); // Hide System Defense Panel
-            
-            
-            QV('go19', false); // Hide Agent Presence Panel
+            QV('go20', true); // Scripting Editor
             
 
             // Clear everything, make sure all connection state is reset.
@@ -43961,6 +43971,10 @@ if (typeof module !== "undefined" && module.exports) {
             if ((systemdefense == 1) && ((amtFirstPull & 4) == 0)) PullSystemDefense();
             
 
+            
+            if (((amtFirstPull & 8) == 0) && (amtversion > 11 || (amtversion == 11 && amtversionmin > 5))) { PullStorage(); }
+            
+
             if (currentView == 0) go(1); // If we are at the loading screen, most to System Status screen
         }
 
@@ -44277,11 +44291,11 @@ if (typeof module !== "undefined" && module.exports) {
                     if (xxCertificates[i].TrustedRootCertficate) desc = ', Trusted Root';
                     if (xxCertificates[i].XPrivateKey) desc = ', Private Key';
                     if (i == xxTlsCurrentCert) desc += ', TLS cert';
-                    x += "<div class='itemBar' onclick='showCertDetails(" + i + ")'><div style=padding-top:3px><b>" + xxCertificates[i].XSubject["CN"] + "</b><i>" + desc + "</i></div></div>";
+                    x += "<div class=itemBar onclick=showCertDetails(" + i + ")><div style=padding-top:3px><b>" + xxCertificates[i].XSubject["CN"] + "</b><i>" + desc + "</i></div></div>";
                 }
                 for (var i in xxCertPrivateKeys) {
                     if (!xxCertPrivateKeys[i].XCert) {
-                        x += "<div class='itemBar' onclick='showKeyPairDetails(" + i + ")'><div style=padding-top:3px><i>Unassigned Private Key Pair #" + i + "</i></div></div>";
+                        x += "<div class=itemBar onclick=showKeyPairDetails(" + i + ")><div style=padding-top:3px><i>Unassigned Private Key Pair #" + i + "</i></div></div>";
                     }
                 }
             }
@@ -45269,6 +45283,7 @@ if (typeof module !== "undefined" && module.exports) {
         var xxWireless;
         function PullWireless() {
             amtFirstPull |= 2;
+            try { if (amtsysstate['AMT_EthernetPortSettings'].responses[1]["MACAddress"] == "00-00-00-00-00-00") return; } catch (e) {} // If the wireless adapter has no MAC, don't show this.
             amtstack.BatchEnum("", ["*CIM_WiFiPortCapabilities", "*CIM_WiFiPort", "*CIM_WiFiEndpoint", "CIM_WiFiEndpointSettings"], processWireless);
         }
 
@@ -45767,20 +45782,22 @@ if (typeof module !== "undefined" && module.exports) {
 
         
         function terminalCaptureToggle() {
-            if (!terminal.m.capture) {
+            if (terminal.m.capture == undefined) {
                 terminal.m.capture = ''; // Start terminal capture
                 idx_terminalCaptureButton.value = 'Stop Capture';
             } else {
-                var n = 'TerminalCapture', d = new Date();
-                if (amtsysstate) { n += "-" + amtsysstate['AMT_GeneralSettings'].response['HostName']; }
-                n += '-' + d.getFullYear() + "-" + ("0"+(d.getMonth()+1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2) + "-" + ("0" + d.getHours()).slice(-2) + "-" + ("0" + d.getMinutes()).slice(-2);;
-                
-                
-                var chooser = Q('fileSaveDialog');
-                chooser.setAttribute("nwsaveas", n + '.cap');
-                chooser.addEventListener("change", function() { require('fs').writeFile(this.value, terminal.m.capture); }, false);
-                chooser.click();
-                
+                if (terminal.m.capture.length > 0) {
+                    var n = 'TerminalCapture', d = new Date();
+                    if (amtsysstate) { n += "-" + amtsysstate['AMT_GeneralSettings'].response['HostName']; }
+                    n += '-' + d.getFullYear() + "-" + ("0"+(d.getMonth()+1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2) + "-" + ("0" + d.getHours()).slice(-2) + "-" + ("0" + d.getMinutes()).slice(-2);;
+                    
+                    
+                    var chooser = Q('fileSaveDialog');
+                    chooser.setAttribute("nwsaveas", n + '.cap');
+                    chooser.addEventListener("change", function() { require('fs').writeFile(this.value, terminal.m.capture); }, false);
+                    chooser.click();
+                    
+                }
                 delete terminal.m.capture;
                 idx_terminalCaptureButton.value = 'Start Capture';
             }
@@ -45814,6 +45831,7 @@ if (typeof module !== "undefined" && module.exports) {
                 desktop.m.useZRLE = (desktopsettings.encoding < 3);
                 desktop.m.showmouse = desktopsettings.showmouse;
                 desktop.m.onScreenSizeChange = center;
+                desktop.m.frameRateDelay = (desktopsettings.limitFrameRate == true)?200:0;
                 
                 
                 desktop.Start(currentcomputer["host"], (currentcomputer["tls"] == 0) ? 16994 : 16995, currentcomputer["user"], currentcomputer["pass"], currentcomputer["tls"]);
@@ -45828,6 +45846,7 @@ if (typeof module !== "undefined" && module.exports) {
             //console.log("onDesktopStateChange: " + state);
             idx_connectbutton1.value = (state == 0) ? 'Connect' : 'Disconnect';
             Q('id_deskstatus').textContent = StatusStrs[state];
+            /*
             switch (state) {
                 case 0:
                     // desktop.m.ResetScreen();
@@ -45835,6 +45854,7 @@ if (typeof module !== "undefined" && module.exports) {
                 case 2:
                     break;
             }
+            */
             
             NW_SetupMainMenu(currentView);
             
@@ -45846,21 +45866,32 @@ if (typeof module !== "undefined" && module.exports) {
 
         function showDesktopSettingsChanged() {
             desktopsettings.encoding = idx_d7desktopmode.value;
+            
             desktopsettings.showfocus = d7showfocus.checked;
+            
             desktopsettings.showmouse = d7showcursor.checked;
             desktopsettings.showcad = d7showcad.checked;
+            desktopsettings.limitFrameRate = d7limitFrameRate.checked;
             localStorage.setItem('desktopsettings', JSON.stringify(desktopsettings));
             applyDesktopSettings();
+            
             if (desktopsettings.showfocus == false) { desktop.m.focusmode = 0; idx_deskFocusBtn.value = 'All Focus'; }
+            
+            desktop.m.frameRateDelay = (desktopsettings.limitFrameRate == true)?200:0;
             if (desktop.State != 0) { desktop.Stop(); setTimeout(connectDesktop, 50); }
         }
 
         function applyDesktopSettings() {
             idx_d7desktopmode.value = desktopsettings.encoding;
+            
             d7showfocus.checked = desktopsettings.showfocus;
+            
             d7showcursor.checked = desktopsettings.showmouse;
             d7showcad.checked = desktopsettings.showcad;
+            d7limitFrameRate.checked = desktopsettings.limitFrameRate;
+            
             QV('idx_deskFocusBtn', desktopsettings.showfocus);
+            
             QV('id_DeskCAD', desktopsettings.showcad);
         }
 
@@ -46815,6 +46846,223 @@ if (typeof module !== "undefined" && module.exports) {
 
 
         //
+        // Storage
+        //
+
+        var xxStorage = null;
+        var xxStorageVendors = [];
+        var xxStorageApplications = [];
+
+        function PullStorage() {
+            amtFirstPull |= 8;
+            wsstack.comm.PerformAjax("", PullStorageResponse, null, 0, "/amt-storage/", "GET");
+        }
+
+        function PullStorageResponse(data, status, tag) {
+            if (status == 200) {
+                QV('go21', true); // Show Storage Panel
+
+                // Fix invalid JSON
+                var x = data.split("\n");
+                var indexsize, logonsize;
+                for (var y in x) {
+                    if (x[y].startsWith('\t"index.htm"')) { indexsize = x[y].split(',')[1]; x.splice(y, 1); }
+                }
+                for (var y in x) {
+                    if (x[y].startsWith('\t"logon.htm"')) { logonsize = x[y].split(',')[1]; x.splice(y, 1); }
+                }
+                for (var y in x) {
+                    if (x[y].startsWith('\t\t\t')) { x[y] = x[y].replace(',', ':'); if (!(x[+y + 1].startsWith('\t\t\t'))) { x[y] = x[y].substring(0, x[y].length - 1); } }
+                    if (x[y] == '\t\t}' && !(x[+y + 1] == '\t}')) { x[y] += ','; }
+                    if (x[y] == '\t}' && !(x[+y + 1] == '}')) { x[y] += ','; }
+                }
+                xxStorage = data = JSON.parse(x.join('\n'));
+                if (indexsize || logonsize) {
+                    data[''] = {}; data[''][''] = {};
+                    if (indexsize) data['']['']['index.htm'] = indexsize;
+                    if (logonsize) data['']['']['logon.htm'] = logonsize;
+                }
+                xxStorageVendors = [];
+                xxStorageApplications = [];
+
+                // Clear all empty vendors & applications
+                for (var i in data) {
+                    var c1 = 0;
+                    for (var j in data[i]) {
+                        c1++;
+                        var c2 = 0;
+                        for (var k in data[i][j]) { c2++; }
+                        if (c2 == 0) { wsstack.comm.PerformAjax("", function () { }, null, 0, "/amt-storage/" + i + "/" + j, "DELETE"); }
+                    }
+                    if (c1 == 0) { wsstack.comm.PerformAjax("", function () { }, null, 0, "/amt-storage/" + i, "DELETE"); }
+                }
+
+                // Display all storage files
+                var count = 0, x = TableStart2() + "<tr><td class=r1 style=padding-left:15px><br>Manage Intel&reg; AMT storage for this computer.<br><br>";
+                var ii, jj, xx = "";
+                for (var i in data) {
+                    for (var j in data[i]) {
+                        for (var k in data[i][j]) {
+                            if (i != ii || j != jj) {
+                                if (xx != "") { x += xx; xx = "<br>"; }
+                                ii = i; jj = j;
+                                if (i != '') { xx += i + " / " + j; } else { xx += "Root" }
+                            }
+                            //var handle = "\"" + i + "\",\"" + j + "\",\"" + k + "\"";
+                            var handle = "\"" + i + ((i != '') ? '/' : '') + j + ((j != '') ? '/' : '') + k + "\"";
+                            xx += "<div class=itemBar><div style=float:right>";
+                            
+                            
+                            
+                            xx += " " + AddButton2("Download", "DownloadFromStorage(" + handle + ",\"" + k + "\")");
+                            
+                            xx += " " + AddButton2("Delete", "DeleteFromStorage(" + handle + ")") + "</div><div style=padding-top:3px><b>" + k + "</b>, <i>" + data[i][j][k] + " bytes</i></div></div>";
+                            count++;
+                            if (xxStorageVendors.indexOf(i) == -1) xxStorageVendors.push(i);
+                            if (xxStorageApplications.indexOf(j) == -1) xxStorageApplications.push(j);
+                        }
+                    }
+                }
+                if (xx != "") x += xx;
+                if (count == 0) { x += "<div style=padding-left:15px><br><i>No files found.</i></div><br>"; }
+                x += "<br><td class=r1>" + TableEnd(AddRefreshButton("PullStorage()") + AddButton("Upload...", "UploadToStorage()"));
+                QH('id_TableSystemStorage', x);
+            } else {
+                QH('id_TableSystemStorage', 'Unable to load storage data...<br/>' + AddButton("Refresh", "PullStorage()"));
+            }
+        }
+
+        
+        function DownloadFromStorage(handle, filename) {
+            if (xxdialogMode) return;
+            wsstack.comm.PerformAjax("", DownloadFromStorageEx, filename, 0, '/amt-storage/' + handle, "GET");
+        }
+
+        function DownloadFromStorageEx(data, status, tag) {
+            saveAs(data2blob(data), tag);
+        }
+        
+
+        function OpenFromStorage(handle) {
+            
+            
+            window.open('http://' + wsstack.comm.host + ':' + wsstack.comm.port + '/amt-storage/' + handle, '_blank').focus();
+            
+        }
+
+        function PushToStorage(vendorAppnameFilename, data, append) {
+            var tag = null;
+            if (data.length > 7000) { tag = [vendorAppnameFilename, data.substring(7000)]; data = data.substring(0, 7000); }
+            var data2 = data;
+            if (append == true) data2 = "<metadata></metadata>" + data;
+            wsstack.comm.PerformAjax(data, PushToStorageResponse, tag, 0, "/amt-storage/" + vendorAppnameFilename + (append == true ? "?append=" : ""), "PUT");
+        }
+
+        function PushToStorageResponse(data, status, tag) {
+            if (status == 200 && tag != null) { PushToStorage(tag[0], tag[1], true); } else { PullStorage(); }
+        }
+
+        function DeleteFromStorage(handle) {
+            if (xxdialogMode) return;
+            setDialogMode(11, 'Storage Delete', 3, DeleteFromStorageEx, 'Confirm removal of file: <b>' + handle + '</b>?', "/amt-storage/" + handle);
+        }
+
+        function DeleteFromStorageEx(button, tag) {
+            wsstack.comm.PerformAjax("", PullStorage, null, 0, tag, "DELETE");
+        }
+
+        function UploadToStorage(file, filename) {
+            if (!filename) { filename = ''; }
+            var x = '';
+            x += '<br>Select a small file to upload to storage and enter a vendor, application and filename.<br>';
+            if (!file) {
+                x += '<br><div style=height:20px><input type=file id=mstoragefile style=float:right;width:240px onchange=SetStorageName()><div>Upload file</div></div>';
+            } else {
+                x += '<br><div style=height:20px><input id=mstoragefile style=float:right;width:240px readonly disabled=disabled value="' + filename + '" ><div>Upload file</div></div>';
+            }
+            x += '<br><div style=height:16px><input id=mstoragevendor placeholder=Vendor list=mstoragevendorlist maxlength=11 style=float:right;width:240px><div>Vendor name</div></div>';
+            x += '<br><div style=height:16px><input id=mstorageapplication placeholder=App list=mstorageapplicationlist maxlength=11 style=float:right;width:240px><div>Application name</div></div>';
+            x += '<br><div style=height:16px><input id=mstoragefilename placeholder=Filename maxlength=11 style=float:right;width:240px><div>Filename</div></div>';
+            x += '<br><div style=height:16px><input id=mstoragetype placeholder=application/octet-stream list=mstoragetypelist style=float:right;width:240px><div>MIME Type</div></div>';
+            x += '<br><div style=height:16px><input id=mstoragelink style=float:right;width:240px><div title="If set, creates a link to this content from the main web page">Link</div></div><br>';
+            x += '<datalist id=mstoragevendorlist>';
+            for (var i in xxStorageVendors) { x += '<option value="' + xxStorageVendors[i] + '">'; }
+            x += '</datalist>';
+            x += '<datalist id=mstorageapplicationlist>';
+            for (var i in xxStorageApplications) { x += '<option value="' + xxStorageApplications[i] + '">'; }
+            x += '</datalist><datalist id=mstoragetypelist><option value="application/octet-stream"><option value="image/jpeg"><option value="text/html"><option value="text/plain"></datalist>';
+            setDialogMode(11, 'Storage Upload', 3, UploadToStorageEx, x, file);
+            if (file) { SetStorageName(filename); }
+        }
+
+        function UploadToStorageEx(button, tag) {
+            if (!tag) {
+                var x = Q('mstoragefile');
+                if (x.files.length != 1) return;
+                var reader = new FileReader();
+                reader.onload = UploadToStorageEx2;
+                reader.filename = x.files[0].name;
+                reader.readAsBinaryString(x.files[0]);
+            } else {
+                var reader = new FileReader();
+                reader.onload = UploadToStorageEx2;
+                reader.filename = Q('mstoragefile').value;
+                reader.readAsBinaryString(tag);
+            }
+        }
+
+        function SetStorageName(filename) {
+            if (!filename) {
+                var x = Q('mstoragefile');
+                if (x.files.length == 1) { filename = x.files[0].name; } else { filename = ''; }
+            }
+            filename = filename.split(' ').join('');
+            var filenameSplit = filename.split('-');
+            if (filenameSplit.length == 3 && filenameSplit[0].length < 12 && filenameSplit[1].length < 12) {
+                Q('mstoragevendor').value = filenameSplit[0];
+                Q('mstorageapplication').value = filenameSplit[1];
+                filename = filenameSplit[2];
+            }
+            filename = filename.split('-').join('');
+            if (filename.endsWith('.gz')) filename = filename.substring(0, filename.length - 3);
+            if (filename.endsWith('.htm') || filename.endsWith('.html')) Q('mstoragetype').value = "text/html";
+            else if (filename.endsWith('.txt')) Q('mstoragetype').value = "text/plain";
+            if (filename.length > 11) filename = filename.substring(0, 11);
+            Q('mstoragefilename').value = filename;
+        }
+
+        function UploadToStorageEx2(file) {
+            var vaf, vendor = Q('mstoragevendor').value;
+            var app = Q('mstorageapplication').value;
+            var filename = Q('mstoragefilename').value;
+            if (filename == '') filename = 'Filename';
+            var mimetype = Q('mstoragetype').value;
+            if (mimetype == '') mimetype = 'application/octet-stream';
+            var link = Q('mstoragelink').value;
+            if (vendor == '' && app == '' && (filename.toLowerCase() == 'logon.htm' || filename.toLowerCase() == 'index.htm')) {
+                vaf = filename.toLowerCase();
+            } else {
+                if (vendor == '') vendor = 'Vendor';
+                if (app == '') app = 'App';
+                vaf = vendor + "/" + app + "/" + filename;
+            }
+
+            var data = "<metadata><headers>";
+            var filename = file.target.filename;
+            if (!filename) { filename = Q('mstoragefile').files[0].name; }
+            if (filename.endsWith('.gz')) { data += "<h>Content-Encoding: gzip</h>"; }
+            data += "<h>Content-Type: " + mimetype + "</h></headers>"; // <h>X-UA-Compatible: IE=Edge</h>
+            if (link != '') data += "<link>" + link + "</link>";
+            data += "</metadata>" + file.target.result;
+
+            PushToStorage(vaf, data);
+        }
+
+
+
+
+
+        //
         // Scripting
         //
 
@@ -46912,6 +47160,7 @@ if (typeof module !== "undefined" && module.exports) {
         var script_BlockScriptSelectedId = null; // The identifier of the currently selected block.
         var editscriptstate; // This is the instance of the script runner used by the editor. This is different from the runner used by the web page.
 
+        
         function scriptLoadStartingBlocks() {
             
             
@@ -46923,6 +47172,7 @@ if (typeof module !== "undefined" && module.exports) {
             });
             
         }
+        
 
         // Called by the "View Editor" or "View Builder" button to toggle between the view modes.
         // If there is no construction blocks, display the script editor only.
@@ -46990,7 +47240,9 @@ if (typeof module !== "undefined" && module.exports) {
         var script_fonclickDblClickDetectIndex = null;
         var script_fonclickDblClickDetectTime = null;
         function script_fonclick(e, t) {
+            
             hideContextMenu(); // Any click on this area must close the context menu
+            
             if (xxdialogMode) return;
             script_BlockScriptSelectedId = null;
             if (t) { t = fgetParentWithId(t); if (t.id.startsWith('xblock_')) { script_BlockScriptSelectedId = t.id.substring(7); } } // Figure out what block was clicked on
@@ -47114,6 +47366,7 @@ if (typeof module !== "undefined" && module.exports) {
 
         // Displays the list of script blocks to the HTML page. Each block is displayed with it's name, attributes and an edit button.
         function fupdatescript() {
+            if (script_BlockScript.length == 0) return; // If there are no script blocks, skip this.
             var x = '';
             for (var i in script_BlockScript) {
                 x += '<div id=xblock_' + i + ' style=cursor:pointer;min-height:24px;background-color:#' + ((script_BlockScriptSelectedId == i) ? 'aaa' : 'ccc') + ';width:auto;padding:5px;margin:2px draggable=true onclick=script_fonclick(event,this) ondragenter=script_fondragenter(event,this) ondragleave=script_fondragleave(event,this) ondragstart=script_fondragstart(event,this) ondragend=script_fondragend(event,this) ondrop=script_fondrop(event,this) title="' + script_BlockScript[i]['desc'] + '"';
@@ -47634,7 +47887,7 @@ if (typeof module !== "undefined" && module.exports) {
             
             QV('id_messageview', x == 100);
             QV('id_mainview', x < 100);
-            for (var i = 0; i < 21; i++) { // Edit this line when adding a new screen
+            for (var i = 0; i < 22; i++) { // Edit this line when adding a new screen
                 QV('p' + i, i == x);
                 var q = QS('go' + i);
                 
