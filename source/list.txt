@@ -1,0 +1,5 @@
+{
+  "computers": [
+    { "name": "TestComputer", "host": "localhost", "user": "admin", "pass": "P@ssw0rd", "tls": 0 }
+  ]
+}

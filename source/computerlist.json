@@ -1,0 +1,41 @@
+{
+  "webappversion": "0.3.8",
+  "computers": [
+    {
+      "name": "AmtMachine-TLS",
+      "host": "amtmachine7",
+      "tags": "",
+      "user": "admin",
+      "pass": "P@ssw0rd",
+      "tls": 1,
+      "ver": "7.1.13",
+      "pstate": "2",
+      "pmode": "1",
+      "date": "2016-11-09T01:01:20.334Z"
+    },
+    {
+      "name": "AmtMachine7",
+      "host": "192.168.2.106",
+      "tags": "",
+      "user": "admin",
+      "pass": "P@ssw0rd",
+      "tls": 0,
+      "ver": "7.1.13",
+      "pstate": "2",
+      "pmode": "1",
+      "date": "2016-11-08T23:35:29.772Z"
+    },
+    {
+      "name": "AmtMachine7-TLS2",
+      "host": "192.168.2.106",
+      "tags": "",
+      "user": "admin",
+      "pass": "P@ssw0rd",
+      "tls": 1,
+      "ver": "7.1.13",
+      "pstate": "2",
+      "pmode": "1",
+      "date": "2016-11-09T00:46:53.820Z"
+    }
+  ]
+}
