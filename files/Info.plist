@@ -15,7 +15,7 @@
     <key>CFBundleIconFile</key>
     <string>nw.icns</string>
     <key>CFBundleIdentifier</key>
-    <string>com.intel.MeshCommander</string>
+    <string>com.insynergy.MeshCommander</string>
     <key>CFBundleInfoDictionaryVersion</key>
     <string>6.0</string>
     <key>CFBundleName</key>
@@ -23,7 +23,7 @@
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleShortVersionString</key>
-    <string>Version 0.6.0</string>
+    <string>Version 0.9.5</string>
     <key>CFBundleSignature</key>
     <string>Cr24</string>
     <key>CFBundleURLTypes</key>

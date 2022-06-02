@@ -298,58 +298,58 @@
         }
       }
     },
-	"AMT-Event-RemoveAllSubscription": {
-		"name": "Event - Remove All Subscriptions",
-		"desc": "Remove all subscriptions.",
-		"vars": {},
-		"code": "# Fetch all of subscriptions handles\nprint \"Deleting all event subscriptions...\"\nsplit ws_query \"CIM_ListenerDestination,CIM_FilterCollectionSubscription\" \",\"\nwsbatchenum \"wsman_answer\" ws_query\njump :error-%%%~%%% wsman_result \"!=\" 200\nlength i wsman_answer.CIM_ListenerDestination.responses\n:loop-%%%~%%%\njump :end-%%%~%%% i \"<=\" 0\nsubstract i i 1\nprint \"Delete {i}\"\nset name wsman_answer.CIM_ListenerDestination.responses.{i}.Name\nset filter wsman_answer.CIM_FilterCollectionSubscription.responses.{i}.Filter.ReferenceParameters.SelectorSet.Selector.Value\njsonparse r \"%7B%22Filter%22:%22<a:EndpointReference><a:Address>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</a:Address><a:ReferenceParameters><w:ResourceURI>http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_FilterCollection</w:ResourceURI><w:SelectorSet><w:Selector Name=%5C%22InstanceID%5C%22>{filter}</w:Selector></w:SelectorSet></a:ReferenceParameters></a:EndpointReference>%22, %22Handler%22:%22<a:EndpointReference><a:Address>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</a:Address><a:ReferenceParameters><w:ResourceURI>http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ListenerDestinationWSManagement</w:ResourceURI><w:SelectorSet><w:Selector Name=%5C%22CreationClassName%5C%22>CIM_ListenerDestinationWSMAN</w:Selector><w:Selector Name=%5C%22Name%5C%22>{name}</w:Selector><w:Selector Name=%5C%22SystemCreationClassName%5C%22>CIM_ComputerSystem</w:Selector><w:Selector Name=%5C%22SystemName%5C%22>Intel(r) AMT</w:Selector></w:SelectorSet></a:ReferenceParameters></a:EndpointReference>%22%7D\"\nwsunsubscribe \"CIM_FilterCollectionSubscription\" r\nprint \"Result: {wsman_result}\"\njump :loop-%%%~%%% i \"!=\" 0\n# End of script\njump :end-%%%~%%%\n:error-%%%~%%%\nprint \"Call failed: {wsman_result_str}\"\n:end-%%%~%%%\nset i\nset r\nset name\nset filter\nset ws_query\nset wsman_answer\nset PullEventSubscriptions 1\n##!BLOCK!##"
-	},
-	"AMT-Event-AddSubscription": {
-		"name": "Event - Add Subscription",
-		"desc": "Add a subscription event to Intel AMT.",
-		"vars": {
-			"SubscriptionType": {
-				"name": "Type",
-				"desc": "Type of subscription",
-				"type": "3",
-				"value": "Push",
-				"values": {
-					"Push": "Push",
-					"PushWithAck": "Push with ACK"
-				}
-			},
-			"SubscriptionFilter": {
-				"name": "Filter",
-				"desc": "Event filter, only the selected event types will be sent.",
-				"type": "3",
-				"value": "1",
-				"values": {
-					"0": "ME Presence Events",
-					"1": "User Notification",
-					"2": "All Events",
-					"3": "Platform Events",
-					"4": "Core Platform Events",
-					"5": "Features",
-					"6": "System Firmware Progress Events"
-				}
-			},
-			"SubscriptionUrl": {
-				"name": "URL",
-				"desc": "URL used to send events to.",
-				"type": "1",
-				"maxlength": "255",
-				"value": "http://"
-			},
-			"SubscriptionArgs": {
-				"name": "Arguments",
-				"desc": "Extra arguments sent when sending the event.",
-				"type": "1",
-				"maxlength": "255",
-				"value": ""
-			}
-		},
-		"code": "print \"Adding subscription: %%%SubscriptionUrl%%%\"\nsplit filters \"Intel(r) AMT:ME Presence,Intel(r) AMT:User,Intel(r) AMT:All,Intel(r) AMT:Platform,Intel(r) AMT:CorePlatform,Intel(r) AMT:Features,Intel(r) AMT:FW ProgressEvents\" \",\"\nset filter filters.%%%SubscriptionFilter%%%\njsonparse subfilter \"%7B%22InstanceID%22:%22{filter}%22%7D\"\nwssubscribe \"CIM_FilterCollection\" \"%%%SubscriptionType%%%\" \"%%%SubscriptionUrl%%%\" subfilter \"%%%SubscriptionArgs%%%\"\n\n# End of script\njump :end-%%%~%%%\n:error-%%%~%%%\nprint \"Call failed: {wsman_result_str}\"\n:end-%%%~%%%\nset filters\nset filter\nset subfilter\nset PullEventSubscriptions 1\n"
-	},
+    "AMT-Event-RemoveAllSubscription": {
+      "name": "Event - Remove All Subscriptions",
+      "desc": "Remove all subscriptions.",
+      "vars": { },
+      "code": "# Fetch all of subscriptions handles\nprint \"Deleting all event subscriptions...\"\nsplit ws_query \"CIM_ListenerDestination,CIM_FilterCollectionSubscription\" \",\"\nwsbatchenum \"wsman_answer\" ws_query\njump :error-%%%~%%% wsman_result \"!=\" 200\nlength i wsman_answer.CIM_ListenerDestination.responses\n:loop-%%%~%%%\njump :end-%%%~%%% i \"<=\" 0\nsubstract i i 1\nprint \"Delete {i}\"\nset name wsman_answer.CIM_ListenerDestination.responses.{i}.Name\nset filter wsman_answer.CIM_FilterCollectionSubscription.responses.{i}.Filter.ReferenceParameters.SelectorSet.Selector.Value\njsonparse r \"%7B%22Filter%22:%22<a:EndpointReference><a:Address>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</a:Address><a:ReferenceParameters><w:ResourceURI>http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_FilterCollection</w:ResourceURI><w:SelectorSet><w:Selector Name=%5C%22InstanceID%5C%22>{filter}</w:Selector></w:SelectorSet></a:ReferenceParameters></a:EndpointReference>%22, %22Handler%22:%22<a:EndpointReference><a:Address>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</a:Address><a:ReferenceParameters><w:ResourceURI>http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ListenerDestinationWSManagement</w:ResourceURI><w:SelectorSet><w:Selector Name=%5C%22CreationClassName%5C%22>CIM_ListenerDestinationWSMAN</w:Selector><w:Selector Name=%5C%22Name%5C%22>{name}</w:Selector><w:Selector Name=%5C%22SystemCreationClassName%5C%22>CIM_ComputerSystem</w:Selector><w:Selector Name=%5C%22SystemName%5C%22>Intel(r) AMT</w:Selector></w:SelectorSet></a:ReferenceParameters></a:EndpointReference>%22%7D\"\nwsunsubscribe \"CIM_FilterCollectionSubscription\" r\nprint \"Result: {wsman_result}\"\njump :loop-%%%~%%% i \"!=\" 0\n# End of script\njump :end-%%%~%%%\n:error-%%%~%%%\nprint \"Call failed: {wsman_result_str}\"\n:end-%%%~%%%\nset i\nset r\nset name\nset filter\nset ws_query\nset wsman_answer\nset PullEventSubscriptions 1\n##!BLOCK!##"
+    },
+    "AMT-Event-AddSubscription": {
+      "name": "Event - Add Subscription",
+      "desc": "Add a subscription event to Intel AMT.",
+      "vars": {
+        "SubscriptionType": {
+          "name": "Type",
+          "desc": "Type of subscription",
+          "type": "3",
+          "value": "Push",
+          "values": {
+            "Push": "Push",
+            "PushWithAck": "Push with ACK"
+          }
+        },
+        "SubscriptionFilter": {
+          "name": "Filter",
+          "desc": "Event filter, only the selected event types will be sent.",
+          "type": "3",
+          "value": "1",
+          "values": {
+            "0": "ME Presence Events",
+            "1": "User Notification",
+            "2": "All Events",
+            "3": "Platform Events",
+            "4": "Core Platform Events",
+            "5": "Features",
+            "6": "System Firmware Progress Events"
+          }
+        },
+        "SubscriptionUrl": {
+          "name": "URL",
+          "desc": "URL used to send events to.",
+          "type": "1",
+          "maxlength": "255",
+          "value": "http://"
+        },
+        "SubscriptionArgs": {
+          "name": "Arguments",
+          "desc": "Extra arguments sent when sending the event.",
+          "type": "1",
+          "maxlength": "255",
+          "value": ""
+        }
+      },
+      "code": "print \"Adding subscription: %%%SubscriptionUrl%%%\"\nsplit filters \"Intel(r) AMT:ME Presence,Intel(r) AMT:User,Intel(r) AMT:All,Intel(r) AMT:Platform,Intel(r) AMT:CorePlatform,Intel(r) AMT:Features,Intel(r) AMT:FW ProgressEvents\" \",\"\nset filter filters.%%%SubscriptionFilter%%%\njsonparse subfilter \"%7B%22InstanceID%22:%22{filter}%22%7D\"\nwssubscribe \"CIM_FilterCollection\" \"%%%SubscriptionType%%%\" \"%%%SubscriptionUrl%%%\" subfilter \"%%%SubscriptionArgs%%%\"\n\n# End of script\njump :end-%%%~%%%\n:error-%%%~%%%\nprint \"Call failed: {wsman_result_str}\"\n:end-%%%~%%%\nset filters\nset filter\nset subfilter\nset PullEventSubscriptions 1\n"
+    },
     "AMT-General-SetUserConsent": {
       "name": "General - Set User Consent",
       "desc": "Set the Intel AMT user consent mode",
@@ -541,13 +541,13 @@
         }
       }
     },
-	"AMT-Network-ClearEnvDetection": {
-		"name": "Network - Clear Environment Detection",
-		"desc": "Clears the DNS information that is used by Intel AMT to dynamically determine the network it is operating in",
-		"vars": {},
-		"code": "split ws_general_query \"*AMT_EnvironmentDetectionSettingData\" \",\"\nwsbatchenum \"wsman_answer\" ws_general_query\nset envDetectionInstance wsman_answer.AMT_EnvironmentDetectionSettingData.response\nset envDetectionInstance.DetectionStrings undefined\nwsput \"AMT_EnvironmentDetectionSettingData\" envDetectionInstance\njump :error-%%%~%%% wsman_result \"==\" 200\nprint \"Cleared environment detection\"\njump :end-%%%~%%%\n:error-%%%~%%%\nprint \"ERROR: WSMAN call failed: {wsman_result_str}\"\njump :end-%%%~%%%\n:end-%%%~%%%\nset envDetectionInstance\nset ws_general_query\nset AMT_EnvironmentDetectionSettingData\nset PullRemoteAccess \"1\"\nset wsman_answer \nset wsman_result\n"
-	},
-    "AMT-Power-PowerAction": {
+    "AMT-Network-ClearEnvDetection": {
+      "name": "Network - Clear Environment Detection",
+      "desc": "Clears the DNS information that is used by Intel AMT to dynamically determine the network it is operating in",
+      "vars": { },
+      "code": "split ws_general_query \"*AMT_EnvironmentDetectionSettingData\" \",\"\nwsbatchenum \"wsman_answer\" ws_general_query\nset envDetectionInstance wsman_answer.AMT_EnvironmentDetectionSettingData.response\nset envDetectionInstance.DetectionStrings undefined\nwsput \"AMT_EnvironmentDetectionSettingData\" envDetectionInstance\njump :error-%%%~%%% wsman_result \"==\" 200\nprint \"Cleared environment detection\"\njump :end-%%%~%%%\n:error-%%%~%%%\nprint \"ERROR: WSMAN call failed: {wsman_result_str}\"\njump :end-%%%~%%%\n:end-%%%~%%%\nset envDetectionInstance\nset ws_general_query\nset AMT_EnvironmentDetectionSettingData\nset PullRemoteAccess \"1\"\nset wsman_answer \nset wsman_result\n"
+    },
+    "AMT-SetBoot-PowerAction": {
       "name": "Power - Power Action",
       "desc": "Perform an Intel AMT power action",
       "code": "set ManagedElementXml \"%3CAddress xmlns=\\%22http://schemas.xmlsoap.org/ws/2004/08/addressing\\%22%3Ehttp://schemas.xmlsoap.org/ws/2004/08/addressing%3C/Address%3E%3CReferenceParameters xmlns=\\%22http://schemas.xmlsoap.org/ws/2004/08/addressing\\%22%3E%3CResourceURI xmlns=\\%22http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd\\%22%3Ehttp://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ComputerSystem%3C/ResourceURI%3E%3CSelectorSet xmlns=\\%22http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd\\%22%3E%3CSelector Name=\\%22CreationClassName\\%22%3ECIM_ComputerSystem%3C/Selector%3E%3CSelector Name=\\%22Name\\%22%3EManagedSystem%3C/Selector%3E%3C/SelectorSet%3E%3C/ReferenceParameters%3E\"\r\njsonparse wsargs \"%7B %22PowerState%22:%22%%%powerAction%%%%22, %22ManagedElement%22:%22{ManagedElementXml}%22 %7D\"\r\nset ManagedElementXml\r\nwsexec \"CIM_PowerManagementService\" \"RequestPowerStateChange\" wsargs\r\nset wsargs\r\njump :error-%%%~%%% wsman_result \"!=\" 200\r\nset PullSystemStatus \"1\"\r\nprint \"Power action completed\"\r\njump :end-%%%~%%%\r\n:error-%%%~%%%\r\nprint \"Call failed: {wsman_result_str}\"\r\n:end-%%%~%%%\r\n",
@@ -565,6 +565,39 @@
           "value": "2"
         }
       }
+    },
+    "AMT-Power-SetBootSettings": {
+      "name": "Power - Set Boot Settings",
+      "desc": "Set next boot parameters",
+      "code": "split ws_general_query \"*AMT_BootSettingData\"\nwsbatchenum \"wsman_answer\" ws_general_query\njump :error-%%%~%%% wsman_result \"!=\" 200\nset bootoptions wsman_answer.AMT_BootSettingData.response\nset bootoptions.BIOSSetup \"%%%bootBiosSetup%%%\"\nset bootoptions.UseSOL \"%%%bootSerialOverLan%%%\"\nwsput \"AMT_BootSettingData\" bootoptions\nset AMT_BootSettingData\njump :error-%%%~%%% wsman_result \"!=\" 200\njump :end-%%%~%%%\n:error-%%%~%%%\nprint \"WSMAN call failed: {wsman_result_str}\"\n:end-%%%~%%%\nset ws_general_query\nset wsman_answer\nset wsman_result\nset wsman_result_str\n#set bootoptions\n\n",
+      "vars": {
+        "bootBiosSetup": {
+          "name": "BIOS Setup",
+          "desc": "On next boot go to BIOS setup screen",
+          "type": "3",
+          "value": "false",
+          "values": {
+            "true": "Enabled",
+            "false": "Disabled"
+          }
+        },
+        "bootSerialOverLan": {
+          "name": "Serial-over-LAN",
+          "desc": "Enable Serial-over-LAN on next boot",
+          "type": "3",
+          "value": "false",
+          "values": {
+            "true": "Enabled",
+            "false": "Disabled"
+          }
+        }
+      }
+    },
+    "AMT-Power-GetBootSettings": {
+      "name": "Power - Get Boot Settings",
+      "desc": "Get next boot parameters",
+      "code": "split ws_general_query \"*AMT_BootSettingData\"\nwsbatchenum \"wsman_answer\" ws_general_query\njump :error-%%%~%%% wsman_result \"!=\" 200\nset bootoptions wsman_answer.AMT_BootSettingData.response\nprint bootoptions\nset AMT_BootSettingData\njump :error-%%%~%%% wsman_result \"!=\" 200\njump :end-%%%~%%%\n:error-%%%~%%%\nprint \"WSMAN call failed: {wsman_result_str}\"\n:end-%%%~%%%\nset ws_general_query\nset wsman_answer\nset wsman_result\nset wsman_result_str\n#set bootoptions\n",
+      "vars": { }
     },
     "AMT-RemoteAccess-AddMpsServerFqdnCert": {
       "name": "Remote - Add MPS FQDN/Cert",
@@ -727,12 +760,12 @@
         }
       }
     },
-	"AMT-RemoteAccess-RemoveAll-MPS": {
-		"name": "Remote - Remove All MPS",
-		"desc": "Remove all MPS",
-		"vars": {},
-		"code": "split ws_general_query \"AMT_ManagementPresenceRemoteSAP\" ,\nwsbatchenum \"wsman_answer\" ws_general_query\nset i 0\nset arr wsman_answer.AMT_ManagementPresenceRemoteSAP.responses\nLength arr_len arr\n:loop-%%%~%%%\nset instanceName wsman_answer.AMT_ManagementPresenceRemoteSAP.responses.{i}.Name\nset selector \"%3Cw:SelectorSet%3E%3Cw:Selector%20Name=%22Name%22%3E{instanceName}%3C/w:Selector%3E%3C/w:SelectorSet%3E\"\nwsdelete \"AMT_ManagementPresenceRemoteSAP\" selector\nadd i i 1\njump :loop-%%%~%%% i \"<\" arr_len\n:end-%%%~%%%\nset AMT_ManagementPresenceRemoteSAP\nset arr\nset i\nset instanceName\nset selector\nset ws_general_query\nset wsman_answer\nset wsman_result\nset wsman_result_str\nset arr_len\nset PullRemoteAccess 1\n"
-	},
+    "AMT-RemoteAccess-RemoveAll-MPS": {
+      "name": "Remote - Remove All MPS",
+      "desc": "Remove all MPS",
+      "vars": { },
+      "code": "split ws_general_query \"AMT_ManagementPresenceRemoteSAP\" ,\nwsbatchenum \"wsman_answer\" ws_general_query\nset i 0\nset arr wsman_answer.AMT_ManagementPresenceRemoteSAP.responses\nLength arr_len arr\n:loop-%%%~%%%\nset instanceName wsman_answer.AMT_ManagementPresenceRemoteSAP.responses.{i}.Name\nset selector \"%3Cw:SelectorSet%3E%3Cw:Selector%20Name=%22Name%22%3E{instanceName}%3C/w:Selector%3E%3C/w:SelectorSet%3E\"\nwsdelete \"AMT_ManagementPresenceRemoteSAP\" selector\nadd i i 1\njump :loop-%%%~%%% i \"<\" arr_len\n:end-%%%~%%%\nset AMT_ManagementPresenceRemoteSAP\nset arr\nset i\nset instanceName\nset selector\nset ws_general_query\nset wsman_answer\nset wsman_result\nset wsman_result_str\nset arr_len\nset PullRemoteAccess 1\n"
+    },
     "AMT-RemoteAccess-AddRemoteAccessPolicyRule": {
       "name": "Remote - Add Trigger (User / Alert)",
       "desc": "Set a remote access trigger policy, used to establish a secure tunnel between a management console and the Intel AMT platform.",

@@ -1,0 +1,16 @@
+{
+    "webexe_settings": {
+        "blacklist": "",
+        "custom_script": "",
+        "download_dir": "/Users/gj1606/Devel/MeshCommander/cache",
+        "export_dir": "/Users/gj1606/Devel/MeshCommander/build/web2exe",
+        "force_download": false,
+        "mac-x64": true,
+        "nw_compression_level": 0,
+        "nw_version": "0.65.0",
+        "output_pattern": "",
+        "sdk_build": false,
+        "uncompressed_folder": false,
+        "whitelist": ""
+    }
+}

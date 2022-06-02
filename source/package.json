@@ -1,32 +1,45 @@
 {
-  "name": "MeshCommander",
-  "version": "0.6.0",
-  "description": "Intel(R) Active Management Technology console tool",
-  "main": "commander.htm",
-  "author": "Intel Corporation",
-  "keywords": [
-    "Intel",
-    "Intel AMT",
-    "Active Management Technology",
-    "Remote Management",
-    "Hardware Management",
-    "Manageability Commander",
-    "MeshCommander"
-  ],
-  "single-instance": false,
-  "window": {
-    "icon": "favicon.png",
-    "toolbar": false,
-    "frame": true,
-    "width": 970,
-    "min_width": 970,
-    "height": 760,
-    "min_height": 640
-  },
-  "dependencies": {
-    "ffi": "^2.0.0",
-    "ref": "^1.3.2",
-    "ref-array": "^1.1.2",
-    "ref-struct": "^1.0.2"
-  }
+    "app_name": "MeshCommander",
+    "author": "Intel Corporation",
+    "dependencies": {
+        "ffi": "^2.0.0",
+        "html-minifier": "^4.0.0",
+        "jsdom": "^16.2.2",
+        "minify-js": "0.0.4",
+        "ref": "^1.3.2",
+        "ref-array": "^1.1.2",
+        "ref-struct": "^1.0.2"
+    },
+    "description": "Intel(R) Active Management Technology console tool",
+    "keywords": [
+        "Intel",
+        "Intel",
+        "AMT",
+        "Active",
+        "Management",
+        "Technology",
+        "Remote",
+        "Management",
+        "Hardware",
+        "Management",
+        "Manageability",
+        "Commander",
+        "MeshCommander"
+    ],
+    "main": "commander.htm",
+    "name": "meshcommander",
+    "single-instance": false,
+    "version": "0.9.5",
+    "webkit": {},
+    "window": {
+        "frame": true,
+        "height": 760,
+        "icon": "favicon.png",
+        "id": "source",
+        "min_height": 640,
+        "min_width": 970,
+        "title": "source",
+        "toolbar": false,
+        "width": 970
+    }
 }

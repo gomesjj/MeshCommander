@@ -7,16 +7,18 @@ JS=${TMP}/appbuild.js
 BUILD=${BASE}/build
 APP=${BUILD}/${NAME}/osx64/${NAME}.app
 export CODESIGN_ALLOCATE="$(xcrun -find codesign_allocate)"
+#CHILD_ENT=${BASE}/entitlements-child.plist
+#PARENT_ENT=${BASE}/entitlements-parent.plist
 ID="$(security find-identity | awk '/ID Application/ {print $2}' | uniq)"
 
 ## Script to pass build parameters to nw-builder
 cat<<EOF>>${JS}
-var NwBuilder = require('nw-builder');
+var NwBuilder = import('nw-builder');
 var nw = new NwBuilder({
     files: './source/**',
     platforms: ['osx64'],
     buildType: 'default',
-    macIcns: './files/meshcommander.icns',
+    macIcns: './files/nw.icns',
     macPlist: './files/Info.plist'
 });
 
@@ -37,9 +39,10 @@ then
 	echo ""
         ## The InfoPlist.strings file provides details that appear
 	## in the application's "About" menu item
-	echo "Copying \"InfoPlist.strings\" to \"en.lproj\" directory"
-	cp ${BASE}/files/InfoPlist.strings ${APP}/Contents/Resources/en.lproj/
-	NWVER=$(ls ${APP}/Contents/Versions/ | awk '{gsub(/\//,""); print}')
+	echo "Copying \"InfoPlist.strings\" to \"lproj\" directory"
+	cp -r ${BASE}/files/en.lproj ${APP}/Contents/Resources/
+	mv ${APP}/Contents/Resources/app.icns ${APP}/Contents/Resources/nw.icns
+	NWVER=$(ls "${APP}/Contents/Frameworks/nwjs Framework.framework/Versions/" | awk '{gsub(/\//,""); print}')
 	echo ""
 else
 	echo "ERROR: Failed to package ${APP##*/}"
@@ -50,11 +53,18 @@ fi
 echo "Signing Application"
 echo ""
 
-codesign --deep --force --verify --verbose --sign "${ID}" "${APP}/Contents/Versions/${NWVER}/nwjs Framework.framework/Helpers/crashpad_handler"
-codesign --deep --force --verify --verbose --sign "${ID}" "${APP}/Contents/Versions/${NWVER}/nwjs Framework.framework/Resources/APP_mode_loader.APP/Contents/MacOS/APP_mode_loader"
-codesign --deep --force --verify --verbose --sign "${ID}" "${APP}/Contents/Versions/${NWVER}/nwjs Helper.APP/Contents/MacOS/nwjs Helper"
-codesign --deep --force --verify --verbose --sign "${ID}" "${APP}"
+codesign --deep --force --verify --verbose --sign "${ID}" "${APP}/Contents/Frameworks/nwjs Framework.framework/Versions/Current/libnode.dylib"
+codesign --deep --force --verify --verbose --sign "${ID}" "${APP}/Contents/Frameworks/nwjs Framework.framework/Versions/Current/libffmpeg.dylib"
+codesign --deep --force --verify --verbose --sign "${ID}" "${APP}/Contents/Frameworks/nwjs Framework.framework"
+codesign --deep --force --verify --verbose --sign "${ID}" "${APP}/Contents/Frameworks/nwjs Framework.framework/Versions/Current/Helpers/app_mode_loader"
+codesign --deep --force --verify --verbose --sign "${ID}" "${APP}/Contents/Frameworks/nwjs Framework.framework/Versions/Current/Helpers/chrome_crashpad_handler"
+codesign --deep --force --verify --verbose --sign "${ID}" "${APP}/Contents/Frameworks/nwjs Framework.framework/Versions/Current/Helpers/nwjs Helper (GPU).app"
+codesign --deep --force --verify --verbose --sign "${ID}" "${APP}/Contents/Frameworks/nwjs Framework.framework/Versions/Current/Helpers/nwjs Helper (Plugin).app"
+codesign --deep --force --verify --verbose --sign "${ID}" "${APP}/Contents/Frameworks/nwjs Framework.framework/Versions/Current/Helpers/nwjs Helper (Renderer).app"
+codesign --deep --force --verify --verbose --sign "${ID}" "${APP}/Contents/Frameworks/nwjs Framework.framework/Versions/Current/Helpers/nwjs Helper.app"
 
+codesign --deep --force --verify --verbose --sign "${ID}" "${APP}"
+#
 echo ""
 echo "Verifying signature"
 echo ""

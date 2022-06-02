@@ -1,0 +1,5 @@
+CFBundleDisplayName = "MeshCommander";
+CFBundleGetInfoString = "Mesh Commander 0.9.5, Copyright Intel Corporation 2022.";
+CFBundleName = "MeshCommander";
+NSContactsUsageDescription = "";
+NSHumanReadableCopyright = "Intel® Active Management Technology console tool Copyright Intel Corporation 2022.";
